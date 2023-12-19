@@ -5,6 +5,8 @@ import Modell from './../../Modell.json'
 import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
 import 'bootstrap/dist/css/bootstrap.css'
 
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+
 /*onMounted(() => {
     createCheckList();
 })*/
@@ -22,9 +24,11 @@ export default {
             this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
         }
         this.modellVorbereiten();
+        if (this.scan_checkPermission()) BarcodeScanner.prepare();
+        else this.scanNichtVerfuegbar = true;
     },
     methods: {
-        schrittAlsHtmlEintragBauen(schritt, id)
+        schrittAlsHtmlEintragBauen(displayName, schritt, id)
         {
             console.log("schrittAlsHtmlEintragBauen");
 
@@ -33,23 +37,50 @@ export default {
             if (!element) {
                 element = document.createElement("div");
                 element.id = id + "-schritt-div";
+                element.classList.add("row");
+                element.classList.add("row-col-3");
+
+                element.classList.add('justify-content-md-center');
             }
+
+            element.innerHTML = "";
+
+            let name = document.createElement("div");
+            name.classList.add("col-md-2");
+            name.classList.add("schritt-titel");
+            name.innerText = displayName;
+
+            let content = document.createElement("div");
+            content.classList.add("col");
+
+            let add = document.createElement("div");
+            add.classList.add("col");
+            add.innerText = "+";
+
+            let edit = document.createElement("div");
+            edit.classList.add("col");
+            edit.innerText = "-";
+
+            let view = document.createElement("div");
+            view.classList.add("col");
+            view.innerText = "X";
 
             switch (schritt.Typ)
             {
                 case "Foto":
                 {
-                    element.innerHTML = '<img id="' + id + '" style="max-width: 300px;max-height: 300px">';
+                    content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
                     break;
                 }
                 case "Text":
                 {
-                    //element.innerHTML = element + ": " + this.pruefung[id_im_datenmodell];
+                    add.addEventListener("click", function() { vm.startScan(replacementString)});
+                    content.innerHTML = '<input type="text" id="' + id + '-schritt-div-content">';
                     break;
                 }
                 case "Checkbox":
                 {
-                    element.innerHTML = '<input type="checkbox" id="' + id + '">';
+                    content.innerHTML = '<input type="checkbox" id="' + id + '-schritt-div-content"/>';
                     break;
                 }
                 case "Barcode":
@@ -58,10 +89,16 @@ export default {
                 }
                 case "Anleitung":
                 {
-                    element.innerHTML = element + ": " + schritt.Beschreibung;
+                    content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + "</span>";
                     break;
                 }
             }
+
+            element.appendChild(name);
+            element.appendChild(content);
+            element.appendChild(add);
+            element.appendChild(edit);
+            element.appendChild(view);
 
             return element;
         },
@@ -74,12 +111,14 @@ export default {
             if (!element) {
                 element = document.createElement("div");
                 element.id = kategorieName + "-kategorie-div";
+                element.classList.add("container");
             }            
 
             for (const [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
             {
-                let schritt = this.schrittAlsHtmlEintragBauen(schrittInhalt, kategorieName + "." + schrittName);
-                if (!document.getElementById(schrittName + "-schritt-div")) element.appendChild(schritt);
+                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
+                let schritt = this.schrittAlsHtmlEintragBauen(schrittName, schrittInhalt, kategorieName + "." + schrittName);
+                if (!document.getElementById(kategorieName + "." + schrittName + "-schritt-div")) element.appendChild(schritt);
             }
 
             return element;
@@ -92,9 +131,19 @@ export default {
 
             for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
             {
+                if (kategorieName == "Eingangsinformationen") continue;
                 let kategorie = this.kategorieAlsHtmlEintragBauen(kategorieName);
                 if (!document.getElementById(kategorieName + "-kategorie-div")) element.appendChild(kategorie);
             }
+        },
+        eingangsinformationenEinhaengen()
+        {
+            console.log("eingangsinformationenEinhaengen");
+
+            let element = document.getElementById("injectionPointAuftragsinfos");
+
+            let kategorie = this.kategorieAlsHtmlEintragBauen("Eingangsinformationen");
+            if (!document.getElementById("Eingangsinformationen-kategorie-div")) element.appendChild(kategorie);
         },
         FunktionNeuePruefung()
         {
@@ -190,6 +239,10 @@ export default {
             {
                 case 1: break;
                 case 2: break;
+                case 3: {
+                    this.kategorieErfuellteSchritteUeberpruefen("Eingangsinformationen");
+                    return this.checkKategorie("Eingangsinformationen");
+                }
                 case 4: this.kategorienUeberpruefen();
                 default: break;
             }
@@ -208,6 +261,7 @@ export default {
 
             if (this.step == 3)
             {
+                if (!this.vorbereitungenFuerSchritt()) return;
                 this.$refs.step3.classList.remove('active');
                 this.$refs.step4.classList.add('active');
             }
@@ -219,6 +273,11 @@ export default {
             }
 
             if (this.step < 5) ++this.step;
+
+            if (this.step == 3)
+            {
+                this.eingangsinformationenEinhaengen();
+            }
 
             if (this.step == 5)
             {
@@ -299,11 +358,11 @@ export default {
             var vorbereitet = this.check.model;
 
             for (var [kategorieName, kategorieInhalt] of Object.entries(vorbereitet))
-            {
+            {   
                 for (var [schrittName, schrittInhalt] of Object.entries(kategorieInhalt))
                 {
                     schrittInhalt["erfuellt"] = false;
-                    schrittInhalt["elementId"] = "";
+                    //schrittInhalt["elementId"] = "";
                 }
                 kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length;
                 kategorieInhalt["erfuellteSchritte"] = 0;
@@ -334,23 +393,23 @@ export default {
             var erfuelltZaehler = 0;
             for (var [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
             {
-                schrittInhalt.erfuellt = schrittUeberpruefen(schrittInhalt);
+                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
+                schrittInhalt["erfuellt"] = this.schrittUeberpruefen(kategorieName + "." + schrittName, schrittInhalt);
                 if (schrittInhalt.erfuellt) ++erfuelltZaehler;
             }
 
             this.pruefung.pruefung[kategorieName].erfuellteSchritte = erfuelltZaehler;
         },
-        schrittUeberpruefen(schritt)
+        schrittUeberpruefen(schrittId, schritt)
         {
             console.log("schrittUeberpruefen");
 
-            try {
-                let element = document.getElementById(schritt["elementId"]);
-            } catch {
-                return false;
-            }
+            let id = schrittId + "-schritt-div-content";
+            let element = document.getElementById(id);
 
-            switch (value["Typ"])
+            if (!element) return true;
+
+            switch (schritt.Typ)
             {
                 case "Anleitung": return true;
                 case "Foto":
@@ -369,11 +428,49 @@ export default {
                     return false;
                 }
             }
+
+            return true;
+        },
+        async scan_checkPermission() {
+            // check or request permission
+            try {
+                const status = await BarcodeScanner.checkPermission({ force: true });
+
+                if (status.granted) {
+                    // the user granted permission
+                    return true;
+                }
+            } catch {
+
+            }
+
+            return false;
+        },
+        async scan_startScan() {
+            if (this.scanNichtVerfuegbar) return;
+
+            console.log("scan_startScan");
+            // make background of WebView transparent
+            // note: if you are using ionic this might not be enough, check below
+            BarcodeScanner.hideBackground();
+
+            const result = await BarcodeScanner.startScan(); // start scanning and wait for a result
+
+            // if the result has content
+            if (result.hasContent) {
+                console.log(result.content); // log the raw scanned content
+            }
+        },
+        scan_stopScan() {
+            BarcodeScanner.showBackground();
+            BarcodeScanner.stopScan();
         }
     },
     data() {
         return {
             step: 1,
+            nextStepMoeglich: true,
+            scanNichtVerfuegbar: false,
             check: {
                 model: Modell,
                 pruefplaene: Pruefplaeneverzeichnis,
@@ -419,11 +516,13 @@ export default {
 <template>
     <div class="menubar mt-3 mb-5">
         <span>SAM-KI-Check</span>
+        <span>Schritt {{step}}</span>
         
 
         <button class="btn btn-secondary menu-button" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
             Menü
         </button>
+        <button @click="scan_startScan">Senden</button>
 
     </div>
 
@@ -431,12 +530,12 @@ export default {
         <div class="container text-center">
             <div class="row justify-content-md-center">
                 <div class="col col-md-6">
-                    <img class="img-fluid" src="src/assets/FinalesLogo_2022-10_rgb_aufgeräumt_gross.png"/>
+                    <img class="img-fluid" src="/src/assets/FinalesLogo_2022-10_rgb_aufgeräumt_gross.png"/>
                 </div>
                 <div class="col col-md-6 d-flex align-items-center ">
                     <div class="col-10 d-grid gap-5 mx-auto h-75">
                         <button class="btn btn-lg btn-start fs-1" @click="FunktionNeuePruefung">Neue Prüfung</button>
-                        <button class="btn btn-lg btn-start fs-1" @click="FunktionPruefungFortsetzen">Prüfung fortsetzen</button>
+                        <button class="btn btn-lg btn-start fs-1" @click="FunktionPruefungFortsetzen" disabled style="background-color:gray;opacity:0.5;">Prüfung fortsetzen</button>
                     </div>
                 </div>
             </div>
@@ -474,6 +573,13 @@ export default {
     </div>
 
     <div id="step3_auftragsinfos" class="step" ref="step3">
+        
+
+        <div class="text-center h1">
+            <div class="mb-5">Prüfauftrag</div>
+
+            <div id="injectionPointAuftragsinfos"/>
+        </div>
     </div>
 
     <div id="step4_uebersicht" class="step" ref="step4">
@@ -496,7 +602,7 @@ export default {
     </div>
 
     <div id="step5_pruefung" class="step" ref="step5">
-        <div class="container text-center h1" id="injectionPointKategorien">
+        <div class="text-center h1" id="injectionPointKategorien">
         </div>
     </div>
 
@@ -504,8 +610,8 @@ export default {
       <button v-if="step==1" disabled class="btn btn-lg step-button-left-inactive fs-1">Zurück</button>
       <button @click="prevStep" v-if="step!=1" class="btn btn-lg step-button-left fs-1">Zurück</button>
       
-
-      <button @click="nextStep" v-if="step<4 && step!=1" class="btn btn-lg step-button-right fs-1">Weiter</button>
+      <button v-if="!nextStepMoeglich" disabled class="btn btn-lg step-button-right-inactive fs-1">Weiter</button>
+      <button @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-lg step-button-right fs-1">Weiter</button>
       <button @click="submit" v-if="step==4" class="btn btn-lg step-button-right fs-1">Senden</button>
       
     </div>
@@ -595,6 +701,17 @@ export default {
   box-shadow: 3px 3px 5px black;
 }
 
+.step-button-right {
+  /*margin-left: auto;*/
+  color: white;
+  border-color: white;
+  margin-right: 7vw;
+  margin-left: auto;
+  margin-bottom: 1.5vw;
+  bottom:0;
+  box-shadow: 3px 3px 5px black;
+}
+
 .step-button-left {
   margin-left: 7vw;
   margin-right: auto;
@@ -613,6 +730,21 @@ export default {
 
 
 
+
+.zeile {
+    background-color: #9ba0a3;
+    border-radius: 5px;
+    height: 3vh;
+    width: 80vw;
+
+    
+}
+
+.schritt-titel {
+    background-color: #9ba0a3;
+    border-radius: 5px;
+    height: 3vh;
+}
 
 
 </style>
