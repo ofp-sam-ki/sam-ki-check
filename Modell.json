@@ -1,20 +1,20 @@
 {
     "Eingangsinformationen": {
-        "Schritt1": {
+        "Schritt 1": {
             "Beschreibung": "hallo",
             "Typ": "Anleitung"
         },
-        "Schritt2": {
+        "Schritt 2": {
             "Beschreibung": "",
             "Typ": "Checkbox",
             "Benötigt": true
         },
-        "Schritt3": {
+        "Schritt 3": {
             "Beschreibung": "",
             "Typ": "Foto",
             "Benötigt": false
         },
-        "Schritt4": {
+        "Schritt 4": {
             "Beschreibung": "",
             "Typ": "Text",
             "Benötigt": false
