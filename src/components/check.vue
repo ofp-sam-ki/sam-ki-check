@@ -24,8 +24,8 @@ export default {
             this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
         }
         this.modellVorbereiten();
-        if (this.scan_checkPermission()) BarcodeScanner.prepare();
-        else this.scanNichtVerfuegbar = true;
+        //if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
+        //else this.scanNichtVerfuegbar = true;
     },
     methods: {
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
@@ -122,6 +122,22 @@ export default {
             }
 
             return element;
+        },
+        kategorieEinhaengen(kategorieName)
+        {
+            let element = document.getElementById("injectionPointKategorie");
+
+            element.innerHTML = "";
+
+            for (const [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
+            {
+                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
+                let schritt = this.schrittAlsHtmlEintragBauen(schrittName, schrittInhalt, kategorieName + "." + schrittName);
+                if (!document.getElementById(kategorieName + "." + schrittName + "-schritt-div")) element.appendChild(schritt);
+            }
+
+
+
         },
         kategorienEinhaengen()
         {
@@ -261,7 +277,7 @@ export default {
 
             if (this.step == 3)
             {
-                if (!this.vorbereitungenFuerSchritt()) return;
+                //if (!this.vorbereitungenFuerSchritt()) return;
                 this.$refs.step3.classList.remove('active');
                 this.$refs.step4.classList.add('active');
             }
@@ -286,11 +302,15 @@ export default {
                 for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
                 {
                     let element = document.getElementById(kategorieName + "-kategorie-div");
+                    let aktiveKategorie = this.darstellung.aktiveKategorie;
                     if (kategorieName == this.darstellung.aktiveKategorie)
                     {
-                        element.classList.add("active");
+                        //element.classList.add("active");
+                        //element.style.visibility = 'visible';
                     } else {
-                        element.classList.remove("active");
+                        //element.classList.remove("active");
+                        //element.style.visibility = 'hidden';
+                        element.innerHTML = ""; //Sauber ist was anderes aber mei
                     }
                 }
             }
@@ -374,7 +394,7 @@ export default {
         {
             console.log("kategorieStarten");
 
-            this.pruefung.aktiveKategorie = kategorieName;
+            this.darstellung.aktiveKategorie = kategorieName;
             this.nextStep();
         },
         kategorienUeberpruefen()
@@ -490,8 +510,7 @@ export default {
                 pruefplanId: "",
                 pruefung: null,
             },
-            darstellung:
-            {
+            darstellung: {
                 aktiveKategorie: "",
                 kategorien: {
                     mechanisch: [0, 10],
@@ -522,7 +541,7 @@ export default {
         <button class="btn btn-secondary menu-button" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
             Menü
         </button>
-        <button @click="scan_startScan">Senden</button>
+        <!-- button @click="scan_startScan">Senden</button -->
 
     </div>
 
@@ -602,8 +621,8 @@ export default {
     </div>
 
     <div id="step5_pruefung" class="step" ref="step5">
-        <div class="text-center h1" id="injectionPointKategorien">
-        </div>
+        <div class="text-center h1" id="injectionPointKategorien"></div>
+        <div class="text-center h1" id="injectionPointKategorie"></div>
     </div>
 
     <div class="button-bar mt-5">
