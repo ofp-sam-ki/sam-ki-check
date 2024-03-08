@@ -605,17 +605,17 @@ export default {
         <div class="container text-center h1">
             <div class="mb-5">Übersicht</div>
                 
-            <div>
-                <div class="row">
-                    <div class="col-8">
-                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg fs-1" style="margin: 5px" v-on:click="kategorieStarten(key)">{{ key }} : {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}</button>
-                    </div>
-                    <div class="col-4">
-                        <div class="row" v-for="(value, key) in darstellung.eingangsinformationen" :key="key" :value="value">
-                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key">{{ key }}</div>
-                        </div>
+            <div class="row">
+                <div class="col-8">
+                    <div class="row" v-for="(value, key) in pruefung.pruefung" :key="key" :value="value">
+                        <button class="btn btn-lg fs-1" style="margin: 5px" v-on:click="kategorieStarten(key)">{{ key }} : {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}</button>
                     </div>
                 </div>
+                <div class="col-4">
+                    <div class="row" v-for="(value, key) in darstellung.eingangsinformationen" :key="key" :value="value">
+                        <div class="col" :id="'ueberblick.eingangsinformationen.' + key">{{ key }}</div>
+                    </div>
+                </div>                    
             </div>
         </div>
     </div>
