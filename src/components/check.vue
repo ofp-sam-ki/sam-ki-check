@@ -2,9 +2,9 @@
 
 //import { onMounted } from 'vue';
 import Modell from './../../Modell.json'
-//import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
+import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
 import 'bootstrap/dist/css/bootstrap.css' 
-import axios from 'axios';
+
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner'; 
 
 /*onMounted(() => {
@@ -14,38 +14,18 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 export default {
     beforeMount() {
         //this.createCheckList();
-        console.log('Client für SAM-KI-Check');
-        
-        axios.get('http://localhost:4000/Pruefplaeneverzeichnis')
-        .then((response) => {
-            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
-            // const Pruefplaeneverzeichnis = response;
-            console.log(response.data);
-            this.check.pruefplaene = response.data;
-            for (const [key, value] of Object.entries(this.check.pruefplaene))
+        for (const [key, value] of Object.entries(this.check.pruefplaene))
+        {
+            this.check.pruefplane_lesbar[key] = "";
+            for (const pruefplanname in value)
             {
-                console.log('Stringifer');
-                this.check.pruefplane_lesbar[key] = "";
-                for (const pruefplanname in value)
-                {
-                    this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
-                }
-                this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+                this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
             }
-            // Fehler Handling - falsche response (JSON String leer, keine Serverantwort)
-            // - David - var response = await axios.get('http...') - Const Fkt davor auch await
-        })
-        .catch(function (error) {
-            console.log('error mess');
-            console.error(error);
-        });
-        
-       
-        this.modellVorbereiten();
-        console.log("before Permission Check Barcode");
-        //if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
-        //else this.scanNichtVerfuegbar = true; 
-        console.log("after Permission Check Barcode");
+            this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+        }
+       this.modellVorbereiten();
+        // if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
+        // else this.scanNichtVerfuegbar = true; 
     },
     methods: {
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
@@ -65,9 +45,6 @@ export default {
                 /* hier Styling */
                 element.classList.add('justify-content-md-center');
             }
-                
-                //element.style.height = "60%";
-                //element.style.overflowY = "scroll";
 
             element.innerHTML = "";
 
@@ -79,16 +56,15 @@ export default {
             let content = document.createElement("div");
             content.classList.add("col");
 
+            let edit = document.createElement("div");
+            edit.classList.add("col");
+
             let add = document.createElement("div");
             add.classList.add("col");
 
-            let edit = document.createElement("div");
-            edit.classList.add("col");
-            /* edit.innerText = "-"; */
-
             let view = document.createElement("div");
             view.classList.add("col");
-            view.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
+            view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
             /*view.onclick = delete content; */
 
             switch (schritt.Typ)
@@ -157,12 +133,24 @@ export default {
                 case "Checkbox":
                 {
                     /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
-
+                    content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + "</span>";
                     let checkbox = document.createElement("input");
                     checkbox.type = "checkbox";
                     checkbox.id = "' + id + '-schritt-div-content";
-                    checkbox.style.transform = "scale(2)";
+                    checkbox.style.display = "none";
 
+                    let iconChecked = '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="secondary" class="bi bi-check2-square" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0"/></svg>';
+                    let iconUnchecked = '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="secondary" class="bi bi-square" viewBox="0 0 16 16"><path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/></svg>';
+                    
+                    let checkboxWrapper = document.createElement("label");
+                    checkboxWrapper.classList.add("checkbox-icon");
+                    checkboxWrapper.htmlFor = checkbox.id;
+
+                    checkboxWrapper.innerHTML = checkbox.checked ? iconChecked : iconUnchecked;
+                    
+                    checkbox.addEventListener("change", function() {
+                        checkboxWrapper.innerHTML = checkbox.checked ? iconChecked : iconUnchecked;
+                        });
 
                     checkbox.addEventListener("change", function()
                         {if (checkbox.checked) 
@@ -170,11 +158,13 @@ export default {
                         else {element.classList.remove('table-success');}
                     });
 
-                    view.addEventListener("click", function()
+                    /* view.addEventListener("click", function()
                                 {checkbox.checked = false;
-                                 element.classList.remove('table-success');});
+                                 element.classList.remove('table-success');
+                                 checkboxWrapper.innerHTML = checkbox.checked ? iconChecked : iconUnchecked;}); */
 
-                    content.appendChild(checkbox);
+                    add.appendChild(checkbox);
+                    add.appendChild(checkboxWrapper);
                     break;
                 }
                 case "Barcode":
@@ -210,8 +200,8 @@ export default {
 
             element.appendChild(name);
             element.appendChild(content);
-            element.appendChild(add);
             element.appendChild(edit);
+            element.appendChild(add);
             element.appendChild(view);
 
             return element;
@@ -588,8 +578,7 @@ export default {
             scanNichtVerfuegbar: false,
             check: {
                 model: Modell,
-                //pruefplaene: Pruefplaeneverzeichnis,
-                pruefplaene: {},
+                pruefplaene: Pruefplaeneverzeichnis,
                 pruefplane_lesbar: {},
                 pruefplanId: "",
                 gespeicherte_pruefungen: {
@@ -708,20 +697,28 @@ export default {
 
     <!-- Übersicht des ausgewählten Prüfplans -->
     <div id="step4_uebersicht" class="step" ref="step4">
-        <div class="container text-center h1">
-            <div class="mb-5">Übersicht</div>
+        <div class="container h1">
+            <div class="mb-5 text-center">Übersicht</div>
                 
             <div class="container">
                 <div class="row">
-                    <div class="col">
-                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px" v-on:click="kategorieStarten(key)">{{ key }}: {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}</button>
+                   <div class="col-10">
+                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" v-on:click="kategorieStarten(key)">
+                                <span class="title h3">{{ key }} <br> <br><br></span>
+                               <!-- <span class="subtitle h5 text-end">{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} <br></span> -->
+                                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
+                                            <div class="progress-bar" style="width: 5%"> {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} </div>
+                                    </div>
+                        </button>
                     </div>
-                    <div class="col">
+                    
+                    <div class="col-2 card text-bg-light h3">
                     <!-- erstmal Dummy-Daten -->
-                        <div class="row" v-for="(value, key) in darstellung.eingangsinformationen" :key="key" :value="value">
+                        <div class="row" style="padding: 10px;" v-for="(value, key) in darstellung.eingangsinformationen" :key="key" :value="value">
                             <div class="col" :id="'ueberblick.eingangsinformationen.' + key">{{ key }}</div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -729,7 +726,7 @@ export default {
 
     <div id="step5_pruefung" class="step" ref="step5">
         <div class="mb-5 h1 text-center">Schritt {{step}}</div>
-        <div class="table" id="injectionPointKategorien">
+        <div class="table table-responsive" style="max-height: 500px; overflow: auto; margin-left:-100px;" id="injectionPointKategorien">
         </div>
     </div>
 
