@@ -2,9 +2,9 @@
 
 //import { onMounted } from 'vue';
 import Modell from './../../Modell.json'
-import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
+//import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
 import 'bootstrap/dist/css/bootstrap.css' 
-
+import axios from 'axios';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner'; 
 
 /*onMounted(() => {
@@ -14,18 +14,38 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 export default {
     beforeMount() {
         //this.createCheckList();
-        for (const [key, value] of Object.entries(this.check.pruefplaene))
-        {
-            this.check.pruefplane_lesbar[key] = "";
-            for (const pruefplanname in value)
+        console.log('Client für SAM-KI-Check');
+        
+        axios.get('http://localhost:4000/Pruefplaeneverzeichnis')
+        .then((response) => {
+            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+            // const Pruefplaeneverzeichnis = response;
+            console.log(response.data);
+            this.check.pruefplaene = response.data;
+            for (const [key, value] of Object.entries(this.check.pruefplaene))
             {
-                this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                console.log('Stringifer');
+                this.check.pruefplane_lesbar[key] = "";
+                for (const pruefplanname in value)
+                {
+                    this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                }
+                this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
             }
-            this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
-        }
-       this.modellVorbereiten();
-        // if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
-        // else this.scanNichtVerfuegbar = true; 
+            // Fehler Handling - falsche response (JSON String leer, keine Serverantwort)
+            // - David - var response = await axios.get('http...') - Const Fkt davor auch await
+        })
+        .catch(function (error) {
+            console.log('error mess');
+            console.error(error);
+        });
+        
+       
+        this.modellVorbereiten();
+        console.log("before Permission Check Barcode");
+        //if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
+        //else this.scanNichtVerfuegbar = true; 
+        console.log("after Permission Check Barcode");
     },
     methods: {
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
@@ -568,7 +588,8 @@ export default {
             scanNichtVerfuegbar: false,
             check: {
                 model: Modell,
-                pruefplaene: Pruefplaeneverzeichnis,
+                //pruefplaene: Pruefplaeneverzeichnis,
+                pruefplaene: {},
                 pruefplane_lesbar: {},
                 pruefplanId: "",
                 gespeicherte_pruefungen: {
