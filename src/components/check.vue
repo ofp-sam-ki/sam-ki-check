@@ -6,6 +6,7 @@ import Modell from './../../Modell.json'
 import 'bootstrap/dist/css/bootstrap.css' 
 import axios from 'axios';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner'; 
+import { reactive } from 'vue';
 
 /*onMounted(() => {
     createCheckList();
@@ -16,7 +17,7 @@ export default {
         //this.createCheckList();
         console.log('Client für SAM-KI-Check');
         
-        axios.get('http://localhost:4000/Pruefplaeneverzeichnis')
+        axios.get('http://localhost:4000/Pruefplaeneverzeichnis_Test')
         .then((response) => {
             // Die JSON-Daten sind in der response.data Eigenschaft enthalten
             // const Pruefplaeneverzeichnis = response;
@@ -34,20 +35,143 @@ export default {
             }
             // Fehler Handling - falsche response (JSON String leer, keine Serverantwort)
             // - David - var response = await axios.get('http...') - Const Fkt davor auch await
+            console.log('Stringified Input');
+            console.log(this.check.pruefplane_lesbar);
+            console.log(this.check.pruefplane_lesbar["Pruefplan2"]);
         })
         .catch(function (error) {
             console.log('error mess');
             console.error(error);
         });
-        
+/*
+        axios.get('http://localhost:4000/pruefplaene/PP_Servicegeraete')
+        .then((response) => {
+            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+            // const Pruefplaeneverzeichnis = response;
+            console.log(response.data);
+            this.pruefung.pruefplan = response.data;
+            for (const [key, value] of Object.entries(this.pruefung.pruefplan))
+            {
+                console.log('Stringifer');
+                this.pruefung.pruefplan_lesbar[key] = "";
+                for (const kategorie in value)
+                {
+                    this.pruefung.pruefplan_lesbar[key] += value[kategorie] + ", "
+                }
+                this.pruefung.pruefplan_lesbar[key] = this.pruefung.pruefplan_lesbar[key].substring(0, this.pruefung.pruefplan_lesbar[key].length - 2);
+            }
+            // Fehler Handling - falsche response (JSON String leer, keine Serverantwort)
+            // - David - var response = await axios.get('http...') - Const Fkt davor auch await
+            console.log('Stringified Input');
+            console.log(this.pruefung.pruefplan_lesbar);
+            console.log(this.pruefung.pruefplan_lesbar["Eingangsinformationen"]);
+        })
+        .catch(function (error) {
+            console.log('error mess');
+            console.error(error);
+        });        
+*/
+//Test:
+/*
+axios.get('http://localhost:4000/pruefplaene/Servicegeräte')
+        .then((response) => {
+            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+            // const Pruefplaeneverzeichnis = response;
+            //const pruefplan_lesbar = {};
+            //console.log("PPServicegeräte")
+            //console.log(response.data);
+            this.proxyData = this.createProxy(response.data);
+            //const myProxy = 
+            this.check.model = response.data;
+            console.log("Proxy Servicegeräte");
+            console.log(this.proxyData);
+            console.log(this.check.model);
+            this.modellVorbereiten();
+            //console.log(this.check.model.Eingangsinformationen.Schritt1.Beschreibung)
+
+            /*
+            console.log(this.proxyData.Eingangsinformationen.Auftrag.Beschreibung);
+            this.pruefung.pruefplan = response.data;
+
+            for (const key in this.pruefung.pruefplan) 
+            {
+                this.pruefung.pruefplan_lesbar[key] = "";
+                const category = this.pruefung.pruefplan[key];
+                for (const subkey in category)
+                {
+                    const entry = category[subkey];
+                    pruefplan_lesbar[key] += entry["Beschreibung"] + ",";
+                    //if (typeof entry === 'object')
+                    //{
+                    //    this.pruefung.pruefplan_lesbar[key] += entry["Beschreibung"] + ", ";
+                    //}
+                }
+                this.pruefung.pruefplan_lesbar[key] = this.pruefung.pruefplan_lesbar[key].substring(0, this.pruefung.pruefplan_lesbar[key].length -2);
+            
+            }
+            */
+
+            //console.log(pruefplan_lesbar);
+            //this.check.model = pruefplan_lesbar;
+            //this.check.model = response;
+/*
+            this.pruefung.pruefplan = response.data;
+            for (const [key, value] of Object.entries(this.pruefung.pruefplan))
+            {
+                console.log('Stringifer');
+                this.pruefung.pruefplan_lesbar[key] = "";
+                for (const kategorie in value)
+                {
+                    this.pruefung.pruefplan_lesbar[key] += value[kategorie] + ", "
+                }
+                this.pruefung.pruefplan_lesbar[key] = this.pruefung.pruefplan_lesbar[key].substring(0, this.pruefung.pruefplan_lesbar[key].length - 2);
+            }
+            // Fehler Handling - falsche response (JSON String leer, keine Serverantwort)
+            // - David - var response = await axios.get('http...') - Const Fkt davor auch await
+            console.log('Stringified Input');
+            console.log(this.pruefung.pruefplan_lesbar);
+            console.log(this.pruefung.pruefplan_lesbar["Eingangsinformationen"]);
+
+        })
+
+        .catch(function (error) {
+            console.log('error mess');
+            console.error(error);
+        });    
+//Test Ende
+*/
        
-        this.modellVorbereiten();
+        //this.modellVorbereiten();
         console.log("before Permission Check Barcode");
         //if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
         //else this.scanNichtVerfuegbar = true; 
         console.log("after Permission Check Barcode");
     },
     methods: {
+
+        removeQuotesFromKeys(obj) 
+        {
+            const result = {};
+            for (const key in obj) 
+            {
+                if (obj.hasOwnProperty(key)) 
+                {
+                    const newKey = key.replace(/"/g, '');
+                    result[newKey] = obj[key];
+                    console.log(result);
+                }
+            }
+            return result;
+        },
+
+        createProxy(obj) 
+        {
+            console.log("createProxy")
+            const transformedObj = this.removeQuotesFromKeys(obj);
+            return reactive(transformedObj);
+            //return reactive(obj);
+        },
+        
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
         {
             console.log("schrittAlsHtmlEintragBauen");
@@ -258,6 +382,11 @@ export default {
             {
                 if (kategorieName == "Eingangsinformationen") continue;
                 let kategorie = this.kategorieAlsHtmlEintragBauen(kategorieName);
+                console.log("kategorie S5")
+                //if (element.classList != active) continue;
+                //console.log(kategorieName);
+                console.log(kategorie);
+                //continue;
                 if (!document.getElementById(kategorieName + "-kategorie-div")) element.appendChild(kategorie);
             }
         },
@@ -275,6 +404,7 @@ export default {
             this.nextStep();
             this.$refs.step1.classList.remove('active');
             this.$refs.step2a.classList.add('active');
+
         },
         FunktionPruefungFortsetzen()
         {
@@ -288,7 +418,7 @@ export default {
 
             var vm = this;
 
-            for (const [key, value] of Object.entries(Modell))
+            for (const [key, value] of Object.entries(this.check.model))
             {
                 /*let attachment = document.createElement('div');
 
@@ -377,12 +507,82 @@ export default {
         nextStep() {
             console.log("nextstep");
             console.log(this.step);
+            if (this.step ==1) ++this.step;
 
             if (this.step == 2)
             {
                 if (this.$refs.auswahlPruefplan.value == "") return;
                 this.$refs.step2a.classList.remove('active');
                 this.$refs.step3.classList.add('active');
+                console.log("check.pruefplanId")
+                console.log(this.check.pruefplanId)     
+
+                // Einbauen get.axios
+                //axios.get('http://localhost:4000/pruefplaene/Servicegeräte')
+                axios.get('http://localhost:4000/pruefplaene/'+this.check.pruefplanId)
+                        .then((response) => {
+                            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+                            // const Pruefplaeneverzeichnis = response;
+                            //const pruefplan_lesbar = {};
+                            console.log("PPServicegeräte")
+                            //console.log(response.data);
+                            this.proxyData = this.createProxy(response.data);
+                            //const myProxy = 
+                            this.check.model = response.data;
+                            console.log("Proxy Servicegeräte");
+                            console.log(this.proxyData);
+                            console.log(this.check.model);
+                            this.modellVorbereiten();
+
+                            //schlechte Lösung aber Versuch:
+                            if (this.step == 3)
+                            {
+                                /* if (!this.vorbereitungenFuerSchritt()) return; */
+                                this.$refs.step3.classList.remove('active');
+                                this.$refs.step4.classList.add('active');
+                                //++this.step;
+                            }
+
+                            if (this.step == 4)
+                            {
+                                console.log("Schritt 4");
+                                console.log(this.pruefung.pruefung);
+                                this.$refs.step4.classList.remove('active');
+                                this.$refs.step5.classList.add('active');
+                                //++this.step;
+                            }
+
+                            if (this.step < 5 ) ++this.step;
+
+                            if (this.step == 3)
+                            {
+                                this.eingangsinformationenEinhaengen();
+                                console.log("if this.step = 3")
+                            }
+
+                            if (this.step == 5)
+                            {
+                                this.kategorienEinhaengen(); //wieso vor der aktivierung/deaktivierung dre passenden Klasse? 
+                                
+                                for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
+                                {
+                                    let element = document.getElementById(kategorieName + "-kategorie-div");
+                                    if (kategorieName == this.darstellung.aktiveKategorie)
+                                    {
+                                        element.classList.add("active");
+                                        console.log(kategorieName)
+                                        console.log("add active")
+                                    } else {
+                                        element.classList.remove("active");
+                                        console.log(kategorieName)
+                                        console.log("remove active")
+                                    }
+                                }
+                            }
+
+                        })
+                //++this.step;
+
             }
 
             if (this.step == 3)
@@ -390,24 +590,29 @@ export default {
                 /* if (!this.vorbereitungenFuerSchritt()) return; */
                 this.$refs.step3.classList.remove('active');
                 this.$refs.step4.classList.add('active');
+                //++this.step;
             }
 
             if (this.step == 4)
             {
+                console.log("Schritt 4");
+                console.log(this.pruefung.pruefung);
                 this.$refs.step4.classList.remove('active');
                 this.$refs.step5.classList.add('active');
+                //++this.step;
             }
 
-            if (this.step < 5) ++this.step;
+            if (this.step < 5 && this.step > 2) ++this.step;
 
             if (this.step == 3)
             {
                 this.eingangsinformationenEinhaengen();
+                console.log("if this.step = 3")
             }
 
             if (this.step == 5)
             {
-                this.kategorienEinhaengen();
+                this.kategorienEinhaengen(); //wieso vor der aktivierung/deaktivierung dre passenden Klasse? 
                 
                 for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
                 {
@@ -415,8 +620,12 @@ export default {
                     if (kategorieName == this.darstellung.aktiveKategorie)
                     {
                         element.classList.add("active");
+                        console.log(kategorieName)
+                        console.log("add active")
                     } else {
                         element.classList.remove("active");
+                        console.log(kategorieName)
+                        console.log("remove active")
                     }
                 }
             }
@@ -428,6 +637,7 @@ export default {
             {
                 this.$refs.step2a.classList.remove('active');
                 this.$refs.step1.classList.add('active');
+
             }
 
             if (this.step == 3)
@@ -465,7 +675,7 @@ export default {
 
             let res = true;
 
-            for (const [key, value] of Object.entries(Modell))
+            for (const [key, value] of Object.entries(this.check.model))
             {
                 res = res && this.checkKategorie(key);
                 if (!res) return false;
@@ -482,6 +692,8 @@ export default {
             console.log("modellVorbereiten");
 
             var vorbereitet = this.check.model;
+            console.log("vorbereitet");
+            console.log(vorbereitet);
 
             for (var [kategorieName, kategorieInhalt] of Object.entries(vorbereitet))
             {   
@@ -500,7 +712,10 @@ export default {
         {
             console.log("kategorieStarten");
 
-            this.pruefung.aktiveKategorie = kategorieName;
+            //this.pruefung.aktiveKategorie = kategorieName;
+            //console.log(this.pruefung.aktiveKategorie);
+            this.darstellung.aktiveKategorie = kategorieName;
+            console.log(this.darstellung.aktiveKategorie);
             this.nextStep();
         },
         kategorienUeberpruefen()
@@ -592,13 +807,16 @@ export default {
             BarcodeScanner.stopScan();
         }
     },
+    // Aufbau planen - wo welche Daten herausnehem naus Server und wie belegen
     data() {
         return {
+            proxyData: null,
             step: 1,
             nextStepMoeglich: true,
             scanNichtVerfuegbar: false,
             check: {
-                model: Modell,
+                //model: Modell,
+                model: {},
                 //pruefplaene: Pruefplaeneverzeichnis,
                 pruefplaene: {},
                 pruefplane_lesbar: {},
@@ -614,6 +832,8 @@ export default {
                 gespeicherte_pruefungId: ""
             },
             pruefung: {
+                pruefplan: {},
+                pruefplan_lesbar: {},
                 pruefplanId: "",
                 pruefung: null,
             },
@@ -628,7 +848,7 @@ export default {
                     Schritt1: {
                         Beschreibung: "abc"
                     },
-                    Schritt4: {
+                    Schritt41: {
                         Beschreibung: "abc"
                     }
                 }
@@ -684,7 +904,8 @@ export default {
             <div>
                 <select class="form-select form-select-lg mb-3" size="15" v-model="check.pruefplanId" id="selectionPruefplan" ref="auswahlPruefplan">
                     <option v-for="(value, key) in check.pruefplane_lesbar" :key="key" :value="value">
-                        {{ key }} für {{ value }}
+                        <!--{{ key }} für {{ value }} -->
+                        {{ value }}
                     </option>
                 </select>
             </div>
@@ -725,7 +946,7 @@ export default {
             <div class="container">
                 <div class="row">
                    <div class="col-10">
-                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" v-on:click="kategorieStarten(key)">
+                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" @click="kategorieStarten(key)">
                                 <span class="title h3">{{ key }} <br> <br><br></span>
                                <!-- <span class="subtitle h5 text-end">{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} <br></span> -->
                                     <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
@@ -736,8 +957,8 @@ export default {
                     
                     <div class="col-2 card text-bg-light h3">
                     <!-- erstmal Dummy-Daten -->
-                        <div class="row" style="padding: 10px;" v-for="(value, key) in darstellung.eingangsinformationen" :key="key" :value="value">
-                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key">{{ key }}</div>
+                        <div class="row" style="padding: 10px; width:" v-for="(value, key, index) in check.model.Eingangsinformationen" :key="key" :value="value">
+                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key" v-if="index < (Object.keys(check.model.Eingangsinformationen).length - 2)"><span style="font-size: 14px;">{{ key+": " }} {{ value.Beschreibung }}</span></div>
                         </div>
                     </div>
 
