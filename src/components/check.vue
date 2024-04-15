@@ -5,7 +5,9 @@ import Modell from './../../Modell.json'
 import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
 import 'bootstrap/dist/css/bootstrap.css'
 
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner'
+
+import JSZip from 'jszip'
 
 /*onMounted(() => {
     createCheckList();
@@ -111,7 +113,8 @@ export default {
             if (!element) {
                 element = document.createElement("div");
                 element.id = kategorieName + "-kategorie-div";
-                element.classList.add("container");
+                //element.classList.add("kategorie");
+                element.classList.add("container");                
             }            
 
             for (const [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
@@ -293,6 +296,9 @@ export default {
             if (this.step == 3)
             {
                 this.eingangsinformationenEinhaengen();
+
+                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                element.style.display = "block";
             }
 
             if (this.step == 5)
@@ -305,12 +311,9 @@ export default {
                     let aktiveKategorie = this.darstellung.aktiveKategorie;
                     if (kategorieName == this.darstellung.aktiveKategorie)
                     {
-                        //element.classList.add("active");
-                        //element.style.visibility = 'visible';
+                        element.style.display = "block";
                     } else {
-                        //element.classList.remove("active");
-                        //element.style.visibility = 'hidden';
-                        element.innerHTML = ""; //Sauber ist was anderes aber mei
+                        element.style.display = "none";
                     }
                 }
             }
@@ -326,7 +329,10 @@ export default {
 
             if (this.step == 3)
             {
-                this.$refs.step3.classList.remove('active');
+                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                element.style.display = "none";
+
+                this.$refs.step3.classList.remove('active');                
                 this.$refs.step2a.classList.add('active');
             }
 
@@ -334,6 +340,9 @@ export default {
             {
                 this.$refs.step4.classList.remove('active');
                 this.$refs.step3.classList.add('active');
+
+                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                element.style.display = "block";
             }
 
             if (this.step == 5)
@@ -484,6 +493,54 @@ export default {
         scan_stopScan() {
             BarcodeScanner.showBackground();
             BarcodeScanner.stopScan();
+        },
+        uploadFile(url, file) {
+            //const url = 'http://www.example.com/upload'; // Replace with your API endpoint
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('File uploaded successfully:', data);
+                // Handle the response from the server
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                // Handle any errors that occur during the upload
+            });
+        },
+        pruefungZwischenspeichern() {
+            let zip = new JSZip();
+
+            let elements = document.querySelectorAll("[type='image']");
+
+            if (elements.length == 0) return;
+
+            // Loop through the selected elements
+            for (var i = 0; i < elements.length; i++) {
+                let element = elements[i];
+
+                if (element.src == '') continue;
+
+                //let kategorie_id = element.id.split('.')[0];
+                let name = element.id.split('-')[0];
+                
+                //let ordner = zip.folder(kategorie_id);
+                ordner.file(name, element.src, {base64: true});
+            }
+
+            zip.generateAsync({ type: "blob" })
+                .then(function (content) {
+                    uploadFile(content, "LINK");
+                });
         }
     },
     data() {
@@ -637,7 +694,7 @@ export default {
 
 
 
-    <div id="checkInjectionPoint">hello</div>
+    <button @click="pruefungZwischenspeichern" class="btn btn-lg">Test</button>
 </template>
 
 
@@ -695,7 +752,6 @@ export default {
 .step.active {
   display: inline;
 }
-
 
 
 
