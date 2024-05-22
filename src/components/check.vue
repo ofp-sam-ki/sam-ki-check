@@ -4,7 +4,7 @@
 import Modell from './../../Modell.json'
 //import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
 import 'bootstrap/dist/css/bootstrap.css' 
-//import 'bootstrap/dist/js/bootstrap.bundle.min.js' --> HTML Part 
+import 'bootstrap/dist/js/bootstrap.bundle.min.js' //--> HTML Part 
 import axios from 'axios';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner' 
 import { reactive } from 'vue';
@@ -49,6 +49,33 @@ export default {
             console.log('error mess');
             console.error(error);
         });
+        
+        // Aktualisieren Zwischenspeicherverzeichnis
+/*
+        axios.get('http://localhost:4000/createZwischenspeicherverzeichnis_List')
+        .then((response) => {
+            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+            // const Pruefplaeneverzeichnis = response;
+            console.log(response.data);
+/*
+            this.check.pruefplaene = response.data;
+            for (const [key, value] of Object.entries(this.check.pruefplaene))
+            {
+                this.check.pruefplane_lesbar[key] = "";
+                for (const pruefplanname in value)
+                {
+                    this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                }
+                this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+            }
+*/
+/*
+        })
+        .catch(function (error) {
+            console.log('error mess');
+            console.error(error);
+        });
+        */
        
         //this.modellVorbereiten();
         //console.log("before Permission Check Barcode");
@@ -346,7 +373,33 @@ export default {
         },
         FunktionPruefungFortsetzen()
         {
+            axios.get('http://localhost:4000/Zwischenspeicherverzeichnis_List')
+            .then((response) => {
+                // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+                // const Pruefplaeneverzeichnis = response;
+                console.log(response.data);
+
+    /*
+                this.check.pruefplaene = response.data;
+                for (const [key, value] of Object.entries(this.check.pruefplaene))
+                {
+                    this.check.pruefplane_lesbar[key] = "";
+                    for (const pruefplanname in value)
+                    {
+                        this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                    }
+                    this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+                }
+    */
+            })
+            .catch(function (error) {
+                console.log('error mess');
+                console.error(error);
+            });
+            
             this.nextStep();
+            this.$refs.step1.classList.remove('active');
+            this.$refs.step2b.classList.add('active');
         },
         modellAus()
         {
@@ -583,7 +636,7 @@ export default {
         submit() {
             // Preference Gerät Name
             var name = " PreferenceGerätName";
-
+            
             console.log("submit");
             axios.post('http://localhost:4000/pruefungen/senden?name=' + name ,this.check.model)
                 .then((response) => 
@@ -595,12 +648,27 @@ export default {
                 console.log('error mess');
                 console.error(error);
             });
-            
+            console.log("Alert");
+            this.showAlert = true;
+            setTimeout(() => {
+                this.showAlert = false;
+            }, 3000);
 
             if (!this.checkAlle)
             {
                 console.log("submit geht nicht")
             }
+            setTimeout(() => {
+                this.step = 1;
+                this.model = {};
+
+                this.$refs.step5.classList.remove('active');
+                this.$refs.step4.classList.remove('active');
+                this.$refs.step1.classList.add('active');
+            }, 3000);
+
+            //this.step = 1;
+            //this.modellVorbereiten();
         },
         checkAlle() {
             console.log("checkAlle");
@@ -787,6 +855,7 @@ export default {
             //object Einstellung von hier lesen
             //const url = 'http://localhost:4000/pruefungen/senden';
             //auch andere Server Axios links 
+            showAlert: false,
             proxyData: null,
             step: 1,
             nextStepMoeglich: true,
@@ -995,10 +1064,19 @@ export default {
       
       <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary btn-lg step-button-right-inactive fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
       <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
+      <!--
       <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
+      -->
       <!-- <button type="button" @click="submit" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" data-bs-placement="left" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?">Senden</button> -->
+      <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       <!-- <button type="button" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" title="Popover title" data-bs-content="Here's some amazing content.">Senden</button> -->
     </div>
+
+    <div v-if="showAlert" class="alert alert-success custom-alert">
+        <strong>Erfolgreich gesendet!</strong> Sie werden zurück zur Startseite geleitet.
+      </div>
+      
+     
 
 
 
@@ -1034,6 +1112,16 @@ export default {
     background-color: #fbfcfc;
 }
 */
+.custom-alert {
+    width: 50%;       /* Breite des Alerts auf 50% des Bildschirms setzen */
+    margin: 0 auto;   /* Zentriert den Alert horizontal */
+    position: fixed;  /* Fixiert den Alert über anderen Inhalten */
+    bottom: 200px;        /* Abstand vom oberen Rand */
+    left: 0;
+    right: 0;
+    z-index: 9999; 
+    text-align: center;   /* Stellt sicher, dass der Alert über anderen Elementen liegt */
+  }
 
 .menu-button {
   margin-left: auto;
