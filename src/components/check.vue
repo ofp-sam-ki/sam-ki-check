@@ -494,97 +494,48 @@ export default {
 
         },
         /*Funktion für Weiter-Button */
-        nextStep() {
-            if (this.step ==1) ++this.step;
-
-            if (this.step == 2)
-            {
+        async nextStep() {
+            if (this.step == 1) {
+                this.step++;
+            } else if (this.step == 2) {
                 if (this.$refs.auswahlPruefplan.value == "") return;
-                this.$refs.step2a.classList.remove('active');
-                this.$refs.step3.classList.add('active');
 
-                axios.get('http://localhost:4000/pruefplaene/'+this.check.pruefplanId)
-                        .then((response) => {
+                await axios.get('http://localhost:4000/pruefplaene/' + this.$refs.auswahlPruefplan.value)
+                    .then((response) => {
+                        if (response.status == 200) {
+                            this.$refs.step2a.classList.remove('active');
+                            this.$refs.step3.classList.add('active');
+                            this.step++;
+
                             this.check.model = response.data;
                             this.modellVorbereiten();
 
-                            //schlechte Lösung aber Versuch:
-                            if (this.step == 3)
-                            {
-                                this.$refs.step3.classList.remove('active');
-                                this.$refs.step4.classList.add('active');
-                            }
-
-                            if (this.step == 4)
-                            {
-                                this.$refs.step4.classList.remove('active');
-                                this.$refs.step5.classList.add('active');
-                            }
-
-                            if (this.step < 5 ) ++this.step;
-
-                            if (this.step == 3)
-                            {
-                                this.eingangsinformationenEinhaengen();
-                            }
-
-                            if (this.step == 5)
-                            {
-                                this.kategorienEinhaengen(); //wieso vor der aktivierung/deaktivierung der passenden Klasse? 
-                                
-                                for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
-                                {
-                                    let element = document.getElementById(kategorieName + "-kategorie-div");
-                                    if (kategorieName == this.darstellung.aktiveKategorie)
-                                    {
-                                        element.classList.add("active");
-                                        console.log(kategorieName)
-                                        console.log("add active")
-                                    } else {
-                                        element.classList.remove("active");
-                                        console.log(kategorieName)
-                                        console.log("remove active")
-                                    }
-                                }
-                            }
-
-                        })
-
-            }
-
-            if (this.step == 3)
-            {
-                /* if (!this.vorbereitungenFuerSchritt()) return; */
+                            this.eingangsinformationenEinhaengen();
+                            let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                            element.style.display = "block";
+                        } else {
+                            alert("Fehler beim Laden des Prüfplans, HTTP-Statuscode: " + response.status);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        alert("Fehler beim Laden des Prüfplans");
+                    });
+            } else if (this.step == 3) {
                 this.$refs.step3.classList.remove('active');
                 this.$refs.step4.classList.add('active');
-            }
-
-            if (this.step == 4)
-            {
+                this.step++;
+            } else if (this.step == 4) {
                 this.$refs.step4.classList.remove('active');
                 this.$refs.step5.classList.add('active');
-            }
+                this.step++;
 
-            if (this.step < 5 && this.step > 2) ++this.step;
+                this.kategorienEinhaengen();
 
-            if (this.step == 3)
-            {
-                this.eingangsinformationenEinhaengen();
-                console.log("if this.step = 3")
-                let element = document.getElementById("Eingangsinformationen-kategorie-div");
-                element.style.display = "block";
-            }
-
-            if (this.step == 5)
-            {
-                this.kategorienEinhaengen(); //wieso vor der aktivierung/deaktivierung der passenden Klasse? 
-                
-                for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
-                {
+                for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung)) {
                     let element = document.getElementById(kategorieName + "-kategorie-div");
                     let aktiveKategorie = this.darstellung.aktiveKategorie;
-                    if (kategorieName == this.darstellung.aktiveKategorie)
-                    {
+                    if (kategorieName == this.darstellung.aktiveKategorie) {
                         //element.classList.add("active");
                         //console.log(kategorieName)
                         //console.log("add active")
@@ -605,7 +556,6 @@ export default {
             {
                 this.$refs.step2a.classList.remove('active');
                 this.$refs.step1.classList.add('active');
-
             }
 
             if (this.step == 3)
@@ -1029,13 +979,15 @@ export default {
             <div class="container">
                 <div class="row">
                    <div class="col-10">
-                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" @click="kategorieStarten(key)">
-                                <span class="title h3">{{ key }} <br> <br><br></span>
-                               <!-- <span class="subtitle h5 text-end">{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} <br></span> -->
-                                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
-                                            <div class="progress-bar" style="width: 5%"> {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} </div>
-                                    </div>
+                    <div v-for="(value, key) in pruefung.pruefung" :key="key" :value="value">
+                        <button v-if="key !== 'Eingangsinformationen'" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" @click="kategorieStarten(key)">
+                            <span class="title h3">{{ key }} <br> <br><br></span>
+                            <!-- <span class="subtitle h5 text-end">{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} <br></span> -->
+                            <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
+                                <div class="progress-bar" style="width: 5%"> {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} </div>
+                            </div>
                         </button>
+                        </div>
                     </div>
                     
                     <div class="col-2 card text-bg-light h3">
