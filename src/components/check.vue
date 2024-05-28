@@ -170,62 +170,47 @@ export default {
                         content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
                         add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16"> <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/> <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/> </svg> </button>' ;
                         
-                        let video;
+                        add.addEventListener("click", function () {
+                            // Überprüfe, ob die getUserMedia-API verfügbar ist
+                            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                                console.log("mediaDevices nicht verfügbar");
+                                return;
+                            }
+                            navigator.mediaDevices.getUserMedia({ video: true })
+                                .then(function (stream) {
+                                    console.log("Starte Webcam-Stream")
+                                    let video = document.createElement("video");
+                                    video.id = "fotoaufnahme";
+                                    video.srcObject = stream;
+                                    console.log(video.srcObject);
+                                    video.autoplay = true;
+                                    video.style.position = "fixed";
+                                    video.style.top = "50%";
+                                    video.style.left = "50%";
+                                    video.style.transform = "translate(-50%, -50%)";
 
-                        add.addEventListener("click", function() {
-                                // Überprüfe, ob die getUserMedia-API verfügbar ist
-                                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)  
-                                { if (video && video.srcObject) {
-                                    // Überprüfe, ob das video-Element bereits existiert
-                                    // hier funktioniert etwas noch nicht
-                                    // Stoppe den Kamerastream
-                                    let stream = video.srcObject;
-                                    let tracks = stream.getTracks();
-                                    tracks.forEach(function(track) {
-                                    track.stop();
-                                    });
+                                    video.innerHTML = '';
 
-                                    // Entferne das video-Element
-                                    video.srcObject = null;
-                                    video.remove();
-                                    video = null;} 
-                                    else {
-                                    // Öffne die Kamera
-                                    navigator.mediaDevices.getUserMedia({ video: true })
-                                    .then(function(stream) 
-                                    {
-                                        console.log("Starte Webcam-Stream")
-                                        let video = document.createElement("video");
-                                        video.srcObject = stream;
-                                        console.log(video.srcObject);
-                                        video.autoplay = true;
-                                        video.style.position = "fixed";
-                                        video.style.top = "50%";
-                                        video.style.left = "50%";
-                                        video.style.transform = "translate(-50%, -50%)";
+                                    let canvas = document.createElement("canvas");
+                                    let context = canvas.getContext("2d");
 
-                                        video.innerHTML ='';
+                                    let startbutton = document.createElement("button");
+                                    startbutton.textContent = "Foto aufnehmen";
+                                    startbutton.classList.add('btn', 'btn-primary');
+                                    startbutton.style.position = "fixed";
+                                    startbutton.style.top = "70%";
+                                    startbutton.style.left = "50%";
+                                    startbutton.style.transform = "translateX(-50%)";
 
-                                        let canvas = document.createElement("canvas");
-                                        let context = canvas.getContext("2d");
+                                    let stopbutton = document.createElement("button");
+                                    stopbutton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"> <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/> </svg>';
+                                    stopbutton.classList.add('btn', 'btn-primary');
+                                    stopbutton.style.position = "fixed";
+                                    stopbutton.style.top = "26%";
+                                    stopbutton.style.left = "65%";
+                                    stopbutton.style.transform = "translateX(-50%)";
 
-                                        let startbutton = document.createElement("button");
-                                        startbutton.textContent = "Foto aufnehmen";
-                                        startbutton.classList.add ('btn', 'btn-primary');
-                                        startbutton.style.position = "fixed";
-                                        startbutton.style.top = "70%";
-                                        startbutton.style.left = "50%";
-                                        startbutton.style.transform = "translateX(-50%)";
-
-                                        let stopbutton = document.createElement("button");
-                                        stopbutton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"> <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/> </svg>';
-                                        stopbutton.classList.add ('btn', 'btn-primary');
-                                        stopbutton.style.position = "fixed";
-                                        stopbutton.style.top = "26%";
-                                        stopbutton.style.left = "65%";
-                                        stopbutton.style.transform = "translateX(-50%)";
-
-                                        startbutton.addEventListener("click", function() {
+                                    startbutton.addEventListener("click", function () {
                                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                                         let imgData = canvas.toDataURL("image/png");
 
@@ -241,63 +226,59 @@ export default {
                                         content.appendChild(img);
 
                                         element.classList.add('table-success');
-                                        });
+                                    });
 
-                                        stopbutton.addEventListener("click", function() {
+                                    stopbutton.addEventListener("click", function () {
+                                        let video = document.getElementById("fotoaufnahme");
+
                                         let stream = video.srcObject;
                                         let tracks = stream.getTracks();
-                                        tracks.forEach(function(track) {
+                                        tracks.forEach(function (track) {
                                             track.stop();
                                         });
 
                                         video.srcObject = null;
                                         video.remove();
-                                        video = null;
+                                        //video = null;
 
                                         startbutton.remove();
                                         stopbutton.remove();
-                                        });
+                                    });
 
-                                        document.body.appendChild(video);
-                                        document.body.appendChild(startbutton);
-                                        document.body.appendChild(stopbutton);
-                                    })
-                                    .catch(function(error) {
-                                        // Fehler beim Öffnen der Kamera
-                                        console.error('Fehler beim Öffnen der Kamera:', error);
+                                    document.body.appendChild(video);
+                                    document.body.appendChild(startbutton);
+                                    document.body.appendChild(stopbutton);
+                                })
+                                .catch(function (error) {
+                                    // Fehler beim Öffnen der Kamera
+                                    console.error('Fehler beim Öffnen der Kamera:', error);
                                 });
-                            
-                                } }
-                                else {
-                                // Die getUserMedia-API wird nicht unterstützt
-                                console.error('getUserMedia wird nicht unterstützt');
-                                }
-                            });
+                        });
                         
                         /* add.addEventListener("change", element.classList.add('table-success')); */
                         
-                        let foto = document.createElement("input");
-                        foto.type = "image";
-                        foto.id = "' + id + '-schritt-div-content";
+                            let foto = document.createElement("input");
+                            foto.type = "image";
+                            foto.id = "' + id + '-schritt-div-content";
 
-                        foto.addEventListener("input", function()
-                            {if (foto = empty) 
-                                {element.classList.add('table-success');} 
-                            else {element.classList.remove('table-success');}
+                            foto.addEventListener("input", function()
+                                {if (foto = empty) 
+                                    {element.classList.add('table-success');} 
+                                else {element.classList.remove('table-success');}
 
-                        // Erstelle ein <img>-Element, um das gespeicherte Foto anzuzeigen
-                        let img = document.createElement("img");
-                        img.src = imgData; // Setze die Data URL des Fotos als Wert für das src-Attribut
+                            // Erstelle ein <img>-Element, um das gespeicherte Foto anzuzeigen
+                            let img = document.createElement("img");
+                            img.src = imgData; // Setze die Data URL des Fotos als Wert für das src-Attribut
 
-                        // Füge das <img>-Element dem content hinzu
-                        content.appendChild(img);
+                            // Füge das <img>-Element dem content hinzu
+                            content.appendChild(img);
                         });
 
                         view.addEventListener("click", function()
-                                    {
-                                        content.innerHTML = "";
-                                        element.classList.remove('table-success');
-                                    });
+                        {
+                            content.innerHTML = "";
+                            element.classList.remove('table-success');
+                        });
 
                         view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
                         /*view.onclick = delete content; */  
