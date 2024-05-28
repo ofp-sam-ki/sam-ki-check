@@ -326,42 +326,25 @@ export default {
                 }
                 case "Checkbox":
                 {
-                    /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
-                    content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + "</span>";
-                    let checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.id = "' + id + '-schritt-div-content";
-                    checkbox.style.display = "none";
-
-                    let iconChecked = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="green" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>';
-                    let iconUnchecked = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="none" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg>';
+                        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
+                        content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
+                        let checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.style.transform ="scale(2)";
                     
-                    let checkboxWrapper = document.createElement("label");
-                    checkboxWrapper.classList.add("btn", "btn-outline-secondary", "btn-lg", "menu-button", "me-md-2");
-                    checkboxWrapper.type = "button";
-                    checkboxWrapper.htmlFor = checkbox.id;
+                        checkbox.id = "' + id + '-schritt-div-content";
+                        
+                        checkbox.addEventListener("change", function() {
+                            if (checkbox.checked) {
+                                element.classList.add('table-success');
+                            } else {
+                                element.classList.remove('table-success');
+                                }
+                            });
 
-                    checkboxWrapper.innerHTML = checkbox.checked ? iconChecked : iconUnchecked;
-                    
-                    checkbox.addEventListener("change", function() {
-                        checkboxWrapper.innerHTML = checkbox.checked ? iconChecked : iconUnchecked;
-                        });
-
-                    checkbox.addEventListener("change", function()
-                        {if (checkbox.checked) 
-                            {element.classList.add('table-success');} 
-                        else {element.classList.remove('table-success');}
-                    });
-
-                    view.addEventListener("click", function()
-                                {checkbox.checked = false;
-                                 element.classList.remove('table-success');
-                                 checkboxWrapper.innerHTML = checkbox.checked ? iconChecked : iconUnchecked;});
-
-                    add.appendChild(checkbox);
-                    add.appendChild(checkboxWrapper);
-                    break;
-                }
+                        view.appendChild(checkbox);
+                        break;
+                    }
                 case "Barcode":
                 {
                     add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"> <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/> </svg></button> ' ;
