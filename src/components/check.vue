@@ -2,39 +2,108 @@
 
 //import { onMounted } from 'vue';
 import Modell from './../../Modell.json'
-import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
+//import Pruefplaeneverzeichnis from './../../Pruefplaeneverzeichnis.json'
 import 'bootstrap/dist/css/bootstrap.css' 
-
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner'; 
+//import 'bootstrap/dist/js/bootstrap.bundle.min.js' --> HTML Part 
+import axios from 'axios';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner' ;
+import { reactive } from 'vue';
+import JSZip from 'jszip'
 
 /*onMounted(() => {
     createCheckList();
 })*/
 
 export default {
+    
     beforeMount() {
         //this.createCheckList();
-        for (const [key, value] of Object.entries(this.check.pruefplaene))
-        {
-            this.check.pruefplane_lesbar[key] = "";
-            for (const pruefplanname in value)
+        //const url = 'http://localhost:4000/pruefungen/senden';
+
+        document.addEventListener("DOMContentLoaded", function(){
+            var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            var popoverList = popoverTriggerList.map(function(element){
+                return new bootstrap.Popover(element);
+            });
+        });
+        console.log('Client für SAM-KI-Check');
+        
+        axios.get('http://localhost:4000/Pruefplaeneverzeichnis_Test')
+        .then((response) => {
+            // Die JSON-Daten sind in der response.data Eigenschaft enthalten
+            // const Pruefplaeneverzeichnis = response;
+            console.log(response.data);
+            this.check.pruefplaene = response.data;
+            for (const [key, value] of Object.entries(this.check.pruefplaene))
             {
-                this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                this.check.pruefplane_lesbar[key] = "";
+                for (const pruefplanname in value)
+                {
+                    this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                }
+                this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
             }
-            this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
-        }
-       this.modellVorbereiten();
-        // if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
-        // else this.scanNichtVerfuegbar = true; 
+
+        })
+        .catch(function (error) {
+            console.log('error mess');
+            console.error(error);
+        });
+       
+        //this.modellVorbereiten();
+        //console.log("before Permission Check Barcode");
+        //if (this.scan_checkPermission()) BarcodeScanner.prepare(); //hier ist noch ein Problem im Browser
+        //else this.scanNichtVerfuegbar = true; 
+        //console.log("after Permission Check Barcode");
     },
     methods: {
+        devideString(input)
+        {
+            var dotIndex = input.indexOf('.');
+            if (dotIndex !== -1)
+            {
+                var firstWord = input.substring(0, dotIndex);
+                return firstWord.trim();
+            }
+            return '';
+        },
+
+        removeQuotesFromKeys(obj) 
+        {
+            const result = {};
+            for (const key in obj) 
+            {
+                if (obj.hasOwnProperty(key)) 
+                {
+                    const newKey = key.replace(/"/g, '');
+                    result[newKey] = obj[key];
+                    console.log(result);
+                }
+            }
+            return result;
+        },
+
+        createProxy(obj) 
+        {
+            const transformedObj = this.removeQuotesFromKeys(obj);
+            return reactive(transformedObj);
+        },
+
+        setSettings()
+        {
+            console.log("Settings")
+            this.$refs.step1.classList.remove('active');
+            this.$refs.step1b.classList.add('active');
+            console.log("Settings2")
+        },
+        
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
         {
-            console.log("schrittAlsHtmlEintragBauen");
-
+            var firstID= this.devideString(id);
             
 
             let element = document.getElementById(id + "-schritt-div");
+            var userInput = '';
             
             if (!element) {
                 element = document.createElement("div");
@@ -43,11 +112,8 @@ export default {
                 element.classList.add("row-col-3");
                 
                 /* hier Styling */
-                element.classList.add('justify-content-md-center');
+                element.classList.add('justify-content-start');
             }
-                
-                //element.style.height = "60%";
-                //element.style.overflowY = "scroll";
 
             element.innerHTML = "";
 
@@ -59,139 +125,270 @@ export default {
             let content = document.createElement("div");
             content.classList.add("col");
 
+            let edit = document.createElement("div");
+            edit.classList.add("col");
+
             let add = document.createElement("div");
             add.classList.add("col");
 
-            let edit = document.createElement("div");
-            edit.classList.add("col");
-            /* edit.innerText = "-"; */
-
             let view = document.createElement("div");
             view.classList.add("col");
-            view.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
-            /*view.onclick = delete content; */
 
             switch (schritt.Typ)
             {
                 case "Foto":
-                {
-                    content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
-                    add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16"> <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/> <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/> </svg> </button>' ;
-                    
-                    add.addEventListener("click", function() {
-                            // Überprüfe, ob die getUserMedia-API verfügbar ist
-                            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                            // Öffne die Kamera
-                            navigator.mediaDevices.getUserMedia({ video: true })
-                            .then(function(stream) {
-                            // Erfolgreich die Kamera geöffnet
-                            // Nutze den Stream, um das Video-Element anzuzeigen oder für andere Zwecke
-                            })
-                            .catch(function(error) {
-                                // Fehler beim Öffnen der Kamera
-                                console.error('Fehler beim Öffnen der Kamera:', error);
-                            });
-                        } else {
-                            // Die getUserMedia-API wird nicht unterstützt
-                            console.error('getUserMedia wird nicht unterstützt');
-                        }
-                        });
-                    
-                    /*add.addEventListener("change", element.classList.add('table-success')); */
-                    
-                    let foto = document.createElement("input");
-                    foto.type = "image";
-                    foto.id = "' + id + '-schritt-div-content";
+                    {
+                        content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
+                        add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16"> <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/> <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/> </svg> </button>' ;
+                        
+                        let video;
 
-                    foto.addEventListener("input", function()
-                        {if (foto = empty) 
-                            {element.classList.add('table-success');} 
-                        else {element.classList.remove('table-success');}
-                    });    
-                    break;
-                }
+                        add.addEventListener("click", function() {
+                                // Überprüfe, ob die getUserMedia-API verfügbar ist
+                                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia)  
+                                { if (video && video.srcObject) {
+                                    // Überprüfe, ob das video-Element bereits existiert
+                                    // hier funktioniert etwas noch nicht
+                                    // Stoppe den Kamerastream
+                                    let stream = video.srcObject;
+                                    let tracks = stream.getTracks();
+                                    tracks.forEach(function(track) {
+                                    track.stop();
+                                    });
+
+                                    // Entferne das video-Element
+                                    video.srcObject = null;
+                                    video.remove();
+                                    video = null;} 
+                                    else {
+                                    // Öffne die Kamera
+                                    navigator.mediaDevices.getUserMedia({ video: true })
+                                    .then(function(stream) 
+                                    {
+                                        console.log("Starte Webcam-Stream")
+                                        let video = document.createElement("video");
+                                        video.srcObject = stream;
+                                        console.log(video.srcObject);
+                                        video.autoplay = true;
+                                        video.style.position = "fixed";
+                                        video.style.top = "50%";
+                                        video.style.left = "50%";
+                                        video.style.transform = "translate(-50%, -50%)";
+
+                                        video.innerHTML ='';
+
+                                        let canvas = document.createElement("canvas");
+                                        let context = canvas.getContext("2d");
+
+                                        let startbutton = document.createElement("button");
+                                        startbutton.textContent = "Foto aufnehmen";
+                                        startbutton.classList.add ('btn', 'btn-primary');
+                                        startbutton.style.position = "fixed";
+                                        startbutton.style.top = "70%";
+                                        startbutton.style.left = "50%";
+                                        startbutton.style.transform = "translateX(-50%)";
+
+                                        let stopbutton = document.createElement("button");
+                                        stopbutton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"> <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/> </svg>';
+                                        stopbutton.classList.add ('btn', 'btn-primary');
+                                        stopbutton.style.position = "fixed";
+                                        stopbutton.style.top = "26%";
+                                        stopbutton.style.left = "65%";
+                                        stopbutton.style.transform = "translateX(-50%)";
+
+                                        startbutton.addEventListener("click", function() {
+                                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                        let imgData = canvas.toDataURL("image/png");
+
+                                        console.log(imgData);
+
+                                        // Foto als Data URL (base64) und weiterverarbeiten
+
+                                        let img = document.createElement("img");
+                                        img.src = imgData; // Setze die Data URL des Fotos als Wert für das src-Attribut
+
+                                        // Füge das <img>-Element dem content hinzu
+                                        content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass das vorherige Foto entfernt wird
+                                        content.appendChild(img);
+
+                                        element.classList.add('table-success');
+                                        });
+
+                                        stopbutton.addEventListener("click", function() {
+                                        let stream = video.srcObject;
+                                        let tracks = stream.getTracks();
+                                        tracks.forEach(function(track) {
+                                            track.stop();
+                                        });
+
+                                        video.srcObject = null;
+                                        video.remove();
+                                        video = null;
+
+                                        startbutton.remove();
+                                        stopbutton.remove();
+                                        });
+
+                                        document.body.appendChild(video);
+                                        document.body.appendChild(startbutton);
+                                        document.body.appendChild(stopbutton);
+                                    })
+                                    .catch(function(error) {
+                                        // Fehler beim Öffnen der Kamera
+                                        console.error('Fehler beim Öffnen der Kamera:', error);
+                                });
+                            
+                                } }
+                                else {
+                                // Die getUserMedia-API wird nicht unterstützt
+                                console.error('getUserMedia wird nicht unterstützt');
+                                }
+                            });
+                        
+                        /* add.addEventListener("change", element.classList.add('table-success')); */
+                        
+                        let foto = document.createElement("input");
+                        foto.type = "image";
+                        foto.id = "' + id + '-schritt-div-content";
+
+                        foto.addEventListener("input", function()
+                            {if (foto = empty) 
+                                {element.classList.add('table-success');} 
+                            else {element.classList.remove('table-success');}
+
+                        // Erstelle ein <img>-Element, um das gespeicherte Foto anzuzeigen
+                        let img = document.createElement("img");
+                        img.src = imgData; // Setze die Data URL des Fotos als Wert für das src-Attribut
+
+                        // Füge das <img>-Element dem content hinzu
+                        content.appendChild(img);
+                        });
+
+                        view.addEventListener("click", function()
+                                    {
+                                        content.innerHTML = "";
+                                        element.classList.remove('table-success');
+                                    });
+
+                        view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
+                        /*view.onclick = delete content; */  
+                        break;
+                    }
                 case "Text":
-                {
-                    add.addEventListener("click", function() { vm.startScan(replacementString)});
-                    
-                    add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"> <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/> </svg></button> ' ;
-                    
-                    let text = document.createElement("input");
-                    text.type = "text";
-                    text.id = "' + id + '-schritt-div-content";
+                    {
+                        add.addEventListener("click", function() { vm.startScan(replacementString)});
+                        
+                        //add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"> <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/> </svg></button> ' ;
+                        
+                        let text = document.createElement("input");
+                        
+                        text.type = "text";
+                        text.id = "' + id + '-schritt-div-content";
 
-                    text.addEventListener("input", function()
-                        {if (text.value.trim() === "") 
-                            {element.classList.remove('table-success');} 
-                        else {element.classList.add('table-success');}
-                    });
-                    
-                    view.addEventListener("click", function()
-                                {text.value = "";
-                                 element.classList.remove('table-success');});
-                    /*content.innerHTML = '<input type="text" id="' + id + '-schritt-div-content">'; */
-                    
-                    content.appendChild(text);
-                    break;
-                }
-                case "Checkbox":
-                {
-                    /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
-
-                    let checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.id = "' + id + '-schritt-div-content";
-                    checkbox.style.transform = "scale(2)";
-
-
-                    checkbox.addEventListener("change", function()
-                        {if (checkbox.checked) 
-                            {element.classList.add('table-success');} 
-                        else {element.classList.remove('table-success');}
-                    });
-
-                    view.addEventListener("click", function()
-                                {checkbox.checked = false;
-                                 element.classList.remove('table-success');});
-
-                    content.appendChild(checkbox);
-                    break;
-                }
-                case "Barcode":
-                {
-                    add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"> <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/> </svg></button> ' ;
-                    
-                    add.addEventListener("click", function() {
-                            // Überprüfe, ob die getUserMedia-API verfügbar ist
-                            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                            // Öffne die Kamera
-                            navigator.mediaDevices.getUserMedia({ video: true })
-                            .then(function(stream) {
-                            // Erfolgreich die Kamera geöffnet
-                            // Nutze den Stream, um das Video-Element anzuzeigen oder für andere Zwecke
-                            })
-                            .catch(function(error) {
-                                // Fehler beim Öffnen der Kamera
-                                console.error('Fehler beim Öffnen der Kamera:', error);
-                            });
-                        } else {
-                            // Die getUserMedia-API wird nicht unterstützt
-                            console.error('getUserMedia wird nicht unterstützt');
-                        }
+                        text.addEventListener("input", () =>
+                            {if (text.value.trim() === "") 
+                                {element.classList.remove('table-success');} 
+                            else 
+                            {
+                                element.classList.add('table-success');
+                                this.userInput = text.value;
+                                this.check.model[firstID][displayName]["Beschreibung"]=this.userInput
+                            }
                         });
-                    break;
-                }
-                case "Anleitung":
-                {
-                    content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + "</span>";
-                    break;
-                }
-            }
+                        
+                        view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
+                        /*view.onclick = delete content; */
 
+                        view.addEventListener("click", function()
+                                    {
+                                        text.value = "";
+                                        element.classList.remove('table-success');
+                                    });
+
+                        content.appendChild(text);
+                        break;
+                    }
+                case "Checkbox":
+                    {
+                        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
+                        content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
+                        let checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.style.transform ="scale(2)";
+                    
+                        checkbox.id = "' + id + '-schritt-div-content";
+                        
+                        checkbox.addEventListener("change", function() {
+                            if (checkbox.checked) {
+                                element.classList.add('table-success');
+                            } else {
+                                element.classList.remove('table-success');
+                                }
+                            });
+
+                        view.appendChild(checkbox);
+                        break;
+                    }
+                case "Barcode":
+                    {
+                        content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
+                        add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"> <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/> </svg></button> ';
+                        add.addEventListener("click", function() {
+                            BarcodeScanner.checkPermission({ force: true })
+                            .then(result => {
+                                if (result.granted) {
+                                BarcodeScanner.hideBackground();  
+                                BarcodeScanner.startScan()
+                                    .then(scanResult => {
+                                    console.log('Barcode erkannt:', scanResult.text);
+                                    // Barcode weiterverarbeiten
+                                    // Scanvorgang stoppen
+                                    BarcodeScanner.stopScan();
+                                    })
+                                    .catch(error => {
+                                    console.error('Fehler beim Scannen:', error);
+                                    });
+                                } else {
+                                console.error('Berechtigung zum Scannen nicht erteilt');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fehler beim Überprüfen der Berechtigung:', error);
+                            });
+                        });
+
+                        let foto = document.createElement("input");
+                        foto.type = "image";
+                        foto.id = "' + id + '-schritt-div-content";
+
+                        foto.addEventListener("input", function() {
+                            if (foto.value === "") {
+                            element.classList.add('table-success');
+                            } else {
+                            element.classList.remove('table-success');
+                            }
+                        });
+
+                        view.addEventListener("click", function()
+                                {
+                                    content.innerHTML = "";
+                                    element.classList.remove('table-success');
+                                });
+
+                        view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
+                        /*view.onclick = delete content; */ 
+                        break;
+                    }
+                case "Anleitung":
+                    {
+                        content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + "</span>";
+                        break;
+                    }
+            }
             element.appendChild(name);
             element.appendChild(content);
-            element.appendChild(add);
             element.appendChild(edit);
+            element.appendChild(add);
             element.appendChild(view);
 
             return element;
@@ -212,6 +409,8 @@ export default {
             {
                 if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
                 let schritt = this.schrittAlsHtmlEintragBauen(schrittName, schrittInhalt, kategorieName + "." + schrittName);
+                console.log("schritt-3")
+                console.log(schritt)
                 if (!document.getElementById(kategorieName + "." + schrittName + "-schritt-div")) element.appendChild(schritt);
             }
 
@@ -244,6 +443,7 @@ export default {
             this.nextStep();
             this.$refs.step1.classList.remove('active');
             this.$refs.step2a.classList.add('active');
+
         },
         FunktionPruefungFortsetzen()
         {
@@ -257,7 +457,7 @@ export default {
 
             var vm = this;
 
-            for (const [key, value] of Object.entries(Modell))
+            for (const [key, value] of Object.entries(this.check.model))
             {
                 /*let attachment = document.createElement('div');
 
@@ -304,7 +504,6 @@ export default {
 
                         attachment.appendChild(container);
 
-
                         break;
                     }
                     case "Checkbox":
@@ -344,14 +543,67 @@ export default {
         },
         /*Funktion für Weiter-Button */
         nextStep() {
-            console.log("nextstep");
-            console.log(this.step);
+            if (this.step == 1) {
+                ++this.step
+                this.$refs.step1.classList.remove('active');
+                this.$refs.step2a.classList.add('active');
+                this.$refs.step3.classList.remove('active');
+                //this.$refs.auswahlPruefplan.value = '';
+                };
 
             if (this.step == 2)
-            {
+            {   //hier könnte der Fehler liegen -> wenn Prüfplan schon ausgewählt, wird direkt zu Schritt 3 gesprungen
                 if (this.$refs.auswahlPruefplan.value == "") return;
                 this.$refs.step2a.classList.remove('active');
                 this.$refs.step3.classList.add('active');
+
+                axios.get('http://localhost:4000/pruefplaene/'+this.check.pruefplanId)
+                        .then((response) => {
+                            this.check.model = response.data;
+                            this.modellVorbereiten();
+
+                            //schlechte Lösung aber Versuch:
+                            if (this.step == 3)
+                            {
+                                this.$refs.step3.classList.remove('active');
+                                this.$refs.step4.classList.add('active');
+                            }
+
+                            if (this.step == 4)
+                            {
+                                this.$refs.step4.classList.remove('active');
+                                this.$refs.step5.classList.add('active');
+                            }
+
+                            if (this.step < 5 ) ++this.step;
+
+                            if (this.step == 3)
+                            {
+                                this.eingangsinformationenEinhaengen();
+                            }
+
+                            if (this.step == 5)
+                            {
+                                this.kategorienEinhaengen(); //wieso vor der aktivierung/deaktivierung der passenden Klasse? 
+                                
+                                for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
+                                {
+                                    let element = document.getElementById(kategorieName + "-kategorie-div");
+                                    if (kategorieName == this.darstellung.aktiveKategorie)
+                                    {
+                                        element.classList.add("active");
+                                        console.log(kategorieName)
+                                        console.log("add active")
+                                    } else {
+                                        element.classList.remove("active");
+                                        console.log(kategorieName)
+                                        console.log("remove active")
+                                    }
+                                }
+                            }
+
+                        })
+
             }
 
             if (this.step == 3)
@@ -367,25 +619,35 @@ export default {
                 this.$refs.step5.classList.add('active');
             }
 
-            if (this.step < 5) ++this.step;
+            if (this.step < 5 && this.step > 2) ++this.step;
 
             if (this.step == 3)
             {
                 this.eingangsinformationenEinhaengen();
+                console.log("if this.step = 3")
+                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                element.style.display = "block";
             }
 
             if (this.step == 5)
             {
-                this.kategorienEinhaengen();
+                this.kategorienEinhaengen(); //wieso vor der aktivierung/deaktivierung der passenden Klasse? 
                 
                 for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
                 {
                     let element = document.getElementById(kategorieName + "-kategorie-div");
+                    let aktiveKategorie = this.darstellung.aktiveKategorie;
                     if (kategorieName == this.darstellung.aktiveKategorie)
                     {
-                        element.classList.add("active");
+                        //element.classList.add("active");
+                        //console.log(kategorieName)
+                        //console.log("add active")
+                        element.style.display = "block";
                     } else {
-                        element.classList.remove("active");
+                        //element.classList.remove("active");
+                        //console.log(kategorieName)
+                        //console.log("remove active")
+                        element.style.display = "none";
                     }
                 }
             }
@@ -394,14 +656,18 @@ export default {
             console.log("prevStep");
 
             if (this.step == 2)
-            {
+            {   //hier müsste vermutlich der ausgewählte Prüfplan deaktiviert werden              
+                this.$refs.auswahlPruefplan.value = '';
                 this.$refs.step2a.classList.remove('active');
                 this.$refs.step1.classList.add('active');
             }
 
             if (this.step == 3)
             {
-                this.$refs.step3.classList.remove('active');
+                //this.$refs.step3.classList.remove('active');
+                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                element.style.display = "none";
+                this.$refs.step3.classList.remove('active');   
                 this.$refs.step2a.classList.add('active');
             }
 
@@ -409,6 +675,8 @@ export default {
             {
                 this.$refs.step4.classList.remove('active');
                 this.$refs.step3.classList.add('active');
+                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                element.style.display = "block";
             }
 
             if (this.step == 5)
@@ -420,11 +688,25 @@ export default {
             if (this.step > 1) --this.step;
         },
         submit() {
+            // Preference Gerät Name
+            var name = " PreferenceGerätName";
+
             console.log("submit");
+            axios.post('http://localhost:4000/pruefungen/senden?name=' + name ,this.check.model)
+                .then((response) => 
+                {
+                    console.log("Submission sucess.")
+                    console.log(response)
+                })
+            .catch(function (error) {
+                console.log('error mess');
+                console.error(error);
+            });
+            
 
             if (!this.checkAlle)
             {
-                console.log("submit geht it")
+                console.log("submit geht nicht")
             }
         },
         checkAlle() {
@@ -434,7 +716,7 @@ export default {
 
             let res = true;
 
-            for (const [key, value] of Object.entries(Modell))
+            for (const [key, value] of Object.entries(this.check.model))
             {
                 res = res && this.checkKategorie(key);
                 if (!res) return false;
@@ -451,6 +733,8 @@ export default {
             console.log("modellVorbereiten");
 
             var vorbereitet = this.check.model;
+            console.log("vorbereitet");
+            console.log(vorbereitet);
 
             for (var [kategorieName, kategorieInhalt] of Object.entries(vorbereitet))
             {   
@@ -469,7 +753,10 @@ export default {
         {
             console.log("kategorieStarten");
 
-            this.pruefung.aktiveKategorie = kategorieName;
+            //this.pruefung.aktiveKategorie = kategorieName;
+            //console.log(this.pruefung.aktiveKategorie);
+            this.darstellung.aktiveKategorie = kategorieName;
+            console.log(this.darstellung.aktiveKategorie);
             this.nextStep();
         },
         kategorienUeberpruefen()
@@ -559,16 +846,65 @@ export default {
         scan_stopScan() {
             BarcodeScanner.showBackground();
             BarcodeScanner.stopScan();
+        },
+        uploadFile(url, file) {
+            //const url = 'http://localhost:4000/pruefungen/senden';
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('File uploaded successfully:', data);
+                // Handle the response from the server
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                // Handle any errors that occur during the upload
+            });
+        },
+        pruefungZwischenspeichern() {
+            let zip = new JSZip();
+            let elements = document.querySelectorAll("[type='image']");
+            if (elements.length == 0) return;
+            // Loop through the selected elements
+            for (var i = 0; i < elements.length; i++) {
+                let element = elements[i];
+                if (element.src == '') continue;
+                //let kategorie_id = element.id.split('.')[0];
+                let name = element.id.split('-')[0];
+                
+                //let ordner = zip.folder(kategorie_id);
+                ordner.file(name, element.src, {base64: true});
+            }
+            zip.generateAsync({ type: "blob" })
+                .then(function (content) {
+                    uploadFile("URL-Link", content);
+                });
         }
     },
+    // Aufbau planen - wo welche Daten herausnehem naus Server und wie belegen
     data() {
         return {
+            //object Einstellung von hier lesen
+            //const url = 'http://localhost:4000/pruefungen/senden';
+            //auch andere Server Axios links 
+            proxyData: null,
             step: 1,
             nextStepMoeglich: true,
             scanNichtVerfuegbar: false,
+            userInput: "",
             check: {
-                model: Modell,
-                pruefplaene: Pruefplaeneverzeichnis,
+                //model: Modell,
+                model: {},
+                //pruefplaene: Pruefplaeneverzeichnis,
+                
+                pruefplaene: {},
                 pruefplane_lesbar: {},
                 pruefplanId: "",
                 gespeicherte_pruefungen: {
@@ -582,6 +918,8 @@ export default {
                 gespeicherte_pruefungId: ""
             },
             pruefung: {
+                pruefplan: {},
+                pruefplan_lesbar: {},
                 pruefplanId: "",
                 pruefung: null,
             },
@@ -596,7 +934,7 @@ export default {
                     Schritt1: {
                         Beschreibung: "abc"
                     },
-                    Schritt4: {
+                    Schritt41: {
                         Beschreibung: "abc"
                     }
                 }
@@ -616,15 +954,50 @@ export default {
         </a>
         <h1 class="me-md-4">SAM-KI-Check</h1>
         <h2 class="me-md-4">Schritt {{step}}</h2>
-
-        <button class="btn btn-secondary btn-lg menu-button me-md-2" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+        
+        <button class="btn btn-secondary btn-lg menu-button me-md-2" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" align="right">
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-list" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
             </svg>
         </button>
+        <ul class="dropdown-menu" v-if="step==1" aria-labelledby="dropdownMenuButton1">
+            <li><a class="dropdown-item text-center"  v-if="step==1" @click="setSettings">Einstellung</a></li>
+        </ul>
+        
 
         <button class="btn btn-outline-secondary btn-lg btn-light" type="button" @click="scan_startScan">Senden</button>
         
+    </div>
+
+    <!-- Einstellung -->
+    <div id="step1b_einstellung" class="step" ref="step1b">
+        <div >
+            <div class="mb-5 h1 text-center">Einstellung</div>
+            <div class="text-center">
+                <table class="table1 table-responsive" style="max-height: 600px; overflow: auto; margin-left:200px;">
+                    <thead>
+                        <tr>
+                        <th scope="col">Parameter</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <th scope="row">1</th>
+                        <td>Preference Gerät Name</td>
+                        <td>Eingabe...</td>
+                        </tr>
+                        <tr>
+                        <th scope="row">2</th>
+                        <td>IP</td>
+                        <td>Eingabe...</td>
+                        </tr>
+                    </tbody>
+                </table>
+        </div>
+        </div>
     </div>
 
     <!--  Home-Screen: Auswahl Prüfpläne (neu oder zwischengespeichert) -->
@@ -652,7 +1025,8 @@ export default {
             <div>
                 <select class="form-select form-select-lg mb-3" size="15" v-model="check.pruefplanId" id="selectionPruefplan" ref="auswahlPruefplan">
                     <option v-for="(value, key) in check.pruefplane_lesbar" :key="key" :value="value">
-                        {{ key }} für {{ value }}
+                        <!--{{ key }} für {{ value }} -->
+                        {{ value }}
                     </option>
                 </select>
             </div>
@@ -680,35 +1054,44 @@ export default {
         <div >
             <div class="mb-5 h1 text-center">Prüfauftrag</div>
 
-            <table class="table align-middle" id="injectionPointAuftragsinfos">
+            <table class="table table-responsive" style="max-height: 500px; overflow: auto; margin-left:-100px;" id="injectionPointAuftragsinfos">
             </table>
         </div>
     </div>
 
     <!-- Übersicht des ausgewählten Prüfplans -->
     <div id="step4_uebersicht" class="step" ref="step4">
-        <div class="container text-center h1">
-            <div class="mb-5">Übersicht</div>
+        <div class="container h1">
+            <div class="mb-5 text-center">Übersicht</div>
                 
             <div class="container">
                 <div class="row">
-                    <div class="col">
-                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px" v-on:click="kategorieStarten(key)">{{ key }}: {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}</button>
+                   <div class="col-10">
+                        <button v-for="(value, key) in pruefung.pruefung" :key="key" :value="value" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" @click="kategorieStarten(key)">
+                                <span class="title h3">{{ key }} <br> <br><br></span>
+                                <!-- <span class="subtitle h5 text-end">{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} <br></span> -->
+                                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
+                                            <div class="progress-bar" style="width: 5%"> {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} </div>
+                                    </div>
+                        </button>
                     </div>
-                    <div class="col">
+                    
+                    <div class="col-2 card text-bg-light h3">
                     <!-- erstmal Dummy-Daten -->
-                        <div class="row" v-for="(value, key) in darstellung.eingangsinformationen" :key="key" :value="value">
-                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key">{{ key }}</div>
+                        <div class="row" style="padding: 10px; width:" v-for="(value, key, index) in check.model.Eingangsinformationen" :key="key" :value="value">
+                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key" v-if="index < (Object.keys(check.model.Eingangsinformationen).length - 2)"><span style="font-size: 14px;">{{ key+": " }} {{ value.Beschreibung }}</span></div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
 
     <div id="step5_pruefung" class="step" ref="step5">
-        <div class="mb-5 h1 text-center">Schritt {{step}}</div>
-        <div class="table" id="injectionPointKategorien">
+        <div class="mb-5 h1 text-center" > Schritt {{step}} </div>  <!--hier sollte eigentlich {{ key}} angezeigt werden -->
+        <div class="table table-responsive" style="max-height: 500px; overflow: auto; margin-left:-100px;" id="injectionPointKategorien">
+            <video id="videoElement" autoplay></video>
         </div>
     </div>
 
@@ -719,13 +1102,15 @@ export default {
       
       <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary btn-lg step-button-right-inactive fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
       <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
-      <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button>
-      
+      <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
+      <!-- <button type="button" @click="submit" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" data-bs-placement="left" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?">Senden</button> -->
+      <!-- <button type="button" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" title="Popover title" data-bs-content="Here's some amazing content.">Senden</button> -->
     </div>
 
 
 
    <!--  <div id="checkInjectionPoint">hello</div> -->
+   <!-- <button @click="pruefungZwischenspeichern" class="btn btn-lg">Test</button> -->
 </template>
 
 
@@ -747,6 +1132,15 @@ export default {
 
   font-weight: bold;
 }
+
+/*
+.table {
+    display: flex;
+    width: 600px;
+    margin: 0 auto;
+    background-color: #fbfcfc;
+}
+*/
 
 .menu-button {
   margin-left: auto;
@@ -771,15 +1165,11 @@ export default {
 }
 
 
-
-
 .btn-start {
     background-color: #005b7f;
     color: white;
     box-shadow: 2px 2px 3px black;
 }
-
-
 
 
 .step-button-right {
@@ -818,8 +1208,6 @@ export default {
   color: white;
   border-color: white;
 }
-
-
 
 
 .zeile {
