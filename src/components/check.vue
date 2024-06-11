@@ -143,23 +143,32 @@ export default {
             }
 
             element.innerHTML = "";
-
+           
+            //Prüf-Nr.
             let name = document.createElement("div");
             name.classList.add("col-md-2");
             name.classList.add("schritt-titel");
             name.innerText = displayName;
 
+            //Prüfschritt
             let content = document.createElement("div");
             content.classList.add("col");
 
+            //leer?
             let edit = document.createElement("div");
             edit.classList.add("col");
 
+            //Buttons für Kamera / Barcode
             let add = document.createElement("div");
             add.classList.add("col");
 
+            //Checkbox oder Inhalt löschen
             let view = document.createElement("div");
             view.classList.add("col");
+
+            //Kommentare
+            let comm = document.createElement("div");
+            comm.classList.add("col");
 
             switch (schritt.Typ)
             {
@@ -281,6 +290,12 @@ export default {
                             content.appendChild(img);
                         });
 
+                        let comment = document.createElement("input");
+                        comment.type = "text";
+                        comment.id = "' + id + '-schritt-div-content";
+
+                        comm.appendChild(comment);
+
                         view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
 
                         view.addEventListener("click", function()
@@ -341,6 +356,12 @@ export default {
                                 }
                             });
 
+                        let comment = document.createElement("input");
+                        comment.type = "text";
+                        comment.id = "' + id + '-schritt-div-content";
+
+                        comm.appendChild(comment);
+
                         view.appendChild(checkbox);
                         break;
                     }
@@ -368,6 +389,13 @@ export default {
                         });
                     
                     view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
+
+                    let comment = document.createElement("input");
+                    comment.type = "text";
+                    comment.id = "' + id + '-schritt-div-content";
+
+                    comm.appendChild(comment);
+                    
                     break;
                 }
                 case "Anleitung":
@@ -381,6 +409,7 @@ export default {
             element.appendChild(edit);
             element.appendChild(add);
             element.appendChild(view);
+            element.appendChild(comm);
 
             return element;
         },
