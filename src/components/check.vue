@@ -1144,7 +1144,7 @@ export default {
     <div id="step5_pruefung" class="step" ref="step5">
         <div class="mb-5 h1 text-center">Schritt {{step}}</div>
         <div class="table table-responsive" style="max-height: 500px; overflow: auto; margin-left:-100px;" id="injectionPointKategorien">
-            <video id="videoElement" autoplay></video>
+            <!-- <video id="videoElement" autoplay></video> -->
         </div>
     </div>
 
