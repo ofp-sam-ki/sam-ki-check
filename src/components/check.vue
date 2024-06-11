@@ -342,7 +342,7 @@ export default {
                                 }
                             });
 
-                        view.appendChild(checkbox);
+                        add.appendChild(checkbox);
                         break;
                     }
                 case "Barcode":
