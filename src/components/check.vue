@@ -290,11 +290,25 @@ export default {
                             content.appendChild(img);
                         });
 
-                        let comment = document.createElement("input");
-                        comment.type = "text";
-                        comment.id = "' + id + '-schritt-div-content";
+                    let comment = document.createElement("input");
+                    comment.type = "text";
+                    comment.id = "' + id + '-schritt-div-comment";
+                    
+                    //Überprüfung, ob Inhalt schon existiert und dann einfügen
+                    if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
 
-                        comm.appendChild(comment);
+                    comment.addEventListener("input", () =>
+                    {if (comment.value.trim() === "") 
+                        {;} 
+                    else 
+                    {
+                        //element.classList.add('table-success');
+                        this.userInput = comment.value;
+                        this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
+                    }
+                    });
+
+                    comm.appendChild(comment);
 
                         view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
 
@@ -339,26 +353,44 @@ export default {
                     break;
                 }
                 case "Checkbox":
-                {
-                        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
+                {        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
                         content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
                         let checkbox = document.createElement("input");
                         checkbox.type = "checkbox";
                         checkbox.style.transform ="scale(2)";
-                    
-                        checkbox.id = "' + id + '-schritt-div-content";
+                        checkbox.id = "' + id + '-schritt-div-checkbox";
+
+                        //Überprüfung, ob Checkbox schon ausgewählt und dann einfügen
+                        if (this.check.model[firstID][displayName]["checkbox"]) {checkbox.checked = this.check.model[firstID][displayName]["checkbox"];}                        
                         
-                        checkbox.addEventListener("change", function() {
+                        checkbox.addEventListener("change", () => {
                             if (checkbox.checked) {
                                 element.classList.add('table-success');
+                                console.log("checkbox checked");
+                                this.check.model[firstID][displayName]["checkbox"] = true;
                             } else {
                                 element.classList.remove('table-success');
+                                this.check.model[firstID][displayName]["checkbox"] = false;
                                 }
                             });
 
                         let comment = document.createElement("input");
                         comment.type = "text";
-                        comment.id = "' + id + '-schritt-div-content";
+                        comment.id = "' + id + '-schritt-div-comment";
+
+                        //Überprüfung, ob Inhalt schon existiert und dann einfügen
+                        if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+
+                        comment.addEventListener("input", () =>
+                        {if (comment.value.trim() === "") 
+                            {;} 
+                        else 
+                        {
+                            //element.classList.add('table-success');
+                            this.userInput = comment.value;
+                            this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
+                        }
+                    });
 
                         comm.appendChild(comment);
 
@@ -392,7 +424,21 @@ export default {
 
                     let comment = document.createElement("input");
                     comment.type = "text";
-                    comment.id = "' + id + '-schritt-div-content";
+                    comment.id = "' + id + '-schritt-div-comment";
+                    
+                    //Überprüfung, ob Inhalt schon existiert und dann einfügen
+                    if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+
+                    comment.addEventListener("input", () =>
+                    {if (comment.value.trim() === "") 
+                        {;} 
+                    else 
+                    {
+                        //element.classList.add('table-success');
+                        this.userInput = comment.value;
+                        this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
+                    }
+                    });
 
                     comm.appendChild(comment);
                     
