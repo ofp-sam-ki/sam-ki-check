@@ -1117,17 +1117,23 @@ export default {
                 
             <div class="container">
                 <div class="row">
-                   <div class="col-10">
-                    <div v-for="(value, key) in pruefung.pruefung" :key="key" :value="value">
-                        <button v-if="key !== 'Eingangsinformationen'" class="btn btn-lg" style="margin: 5px; width: 30rem; height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" @click="kategorieStarten(key)">
-                            <span class="title h3">{{ key }} <br> <br><br></span>
-                            <!-- <span class="subtitle h5 text-end">{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} <br></span> -->
-                            <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
-                                <div class="progress-bar" style="width: 5%"> {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} </div>
+                    <div class="col-10">
+                        <div class="row">
+                            <div v-for="(value, key, index) in pruefung.pruefung" :key="key" :value="value" class="col-4 mb-3">
+                                <button v-if="key !== 'Eingangsinformationen'" class="btn btn-lg w-100" 
+                                    style="height: 10rem; background-color: var(--bs-success-bg-subtle); color: var(--bs-success-color);" 
+                                    @click="kategorieStarten(key)">
+                                    <span class="title h3">{{ key }} <br> <br></span>
+                                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
+                                        <div class="progress-bar" style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
+                                        {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} 
+                                    </div>
+                                    </div>
+                                </button>
                             </div>
-                        </button>
                         </div>
                     </div>
+
                     
                     <div class="col-2 card text-bg-light h3">
                     <!-- erstmal Dummy-Daten -->
@@ -1152,7 +1158,7 @@ export default {
                     <div class="col"> </div>
                     <div class="col">Kommentar Bearbeiter</div>
             </div>
-        <div class="table-responsive" style="max-height: 350px; overflow: auto;" id="injectionPointKategorien">
+        <div class="table table-responsive" style="max-height: 350px; overflow: auto;" id="injectionPointKategorien">
 
         </div>
     </div>
