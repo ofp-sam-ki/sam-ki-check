@@ -1074,7 +1074,7 @@ export default {
             <h1>Prüfplan auswählen</h1>
             
             <div>
-                <select class="form-select form-select-lg mb-3" size="15" v-model="check.pruefplanId" id="selectionPruefplan" ref="auswahlPruefplan">
+                <select class="form-select form-select-lg mb-3" size="12" v-model="check.pruefplanId" id="selectionPruefplan" ref="auswahlPruefplan">
                     <option v-for="(value, key) in check.pruefplane_lesbar" :key="key" :value="value">
                         <!--{{ key }} für {{ value }} -->
                         {{ value }}
@@ -1142,9 +1142,9 @@ export default {
     </div>
 
     <div id="step5_pruefung" class="step" ref="step5">
-        <div class="mb-5 h1 text-center">Schritt {{step}}</div>
-        <div class="table-responsive" style="max-height: 500px; overflow: auto;" id="injectionPointKategorien">
-            <div class="container row row-col-3 justify-content-md-center" style="display: flex; margin-left: auto; margin-right: auto; font-weight: bold; padding:0; padding-bottom: 10px;">
+        <div class="mb-5 h1 text-center" v-if="darstellung.aktiveKategorie">
+            {{ darstellung.aktiveKategorie }}</div>
+        <div class="container row row-col-3 justify-content-md-center" style="display: flex; margin-left: auto; margin-right: auto; font-weight: bold; padding:0; padding-bottom: 10px;">
                     <div class="col-md-2">Prüf-Nr.</div>
                     <div class="col">Beschreibung Prüfschritt</div>
                     <div class="col"> </div>
@@ -1152,13 +1152,15 @@ export default {
                     <div class="col"> </div>
                     <div class="col">Kommentar Bearbeiter</div>
             </div>
+        <div class="table-responsive" style="max-height: 350px; overflow: auto;" id="injectionPointKategorien">
+
         </div>
     </div>
 
     <!-- Weiter und Zurück Buttons -->
     <div class="m-3">
       <button type="button" v-if="step==1" disabled class="btn btn-outline-secondary btn-lg step-button-left-inactive fs-1 position-absolute bottom-0 start-0">Zurück</button>
-      <button type="button" @click="prevStep" v-if="step!=1" class="btn btn-outline-secondary btn-lg step-button-left fs-1 position-absolute bottom-0 start-0">Zurück</button>
+      <button type="button" @click="prevStep" v-if="step!=1" class="btn btn-outline-secondary btn-bg-white btn-lg step-button-left fs-1 position-absolute bottom-0 start-0">Zurück</button>
       
       <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary btn-lg step-button-right-inactive fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
       <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
