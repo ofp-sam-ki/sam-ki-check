@@ -139,7 +139,7 @@ export default {
                 element.classList.add("row-col-3");
                 
                 /* hier Styling */
-                element.classList.add('justify-content-md-center');
+                element.classList.add('justify-content-md-center', 'pb-3');
             }
 
             element.innerHTML = "";
@@ -310,7 +310,7 @@ export default {
 
                     comm.appendChild(comment);
 
-                        view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
+                        view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
 
                         view.addEventListener("click", function()
                         {
@@ -420,7 +420,7 @@ export default {
                         }
                         });
                     
-                    view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
+                    view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
 
                     let comment = document.createElement("input");
                     comment.type = "text";
@@ -999,7 +999,7 @@ export default {
 
 <template>
     <!-- Header -->
-    <div class="menubar mt-3 mb-5">
+    <div class="menubar mb-5">
         <a class="navbar-brand" href="step1_start">
             <img src="/src/assets/FinalesLogo_2022-10_rgb_aufgeräumt_gross.png" alt="Logo" width="120" class="d-inline-block align-text-top">
         </a>
@@ -1105,7 +1105,7 @@ export default {
         <div >
             <div class="mb-5 h1 text-center">Prüfauftrag</div>
 
-            <table class="table table-responsive" style="max-height: 500px; overflow: auto; margin-left:-100px;" id="injectionPointAuftragsinfos">
+            <table class="table table-responsive justify-content-md-center md-3" style="max-height: 500px; overflow: auto; margin-left: auto; margin-right: auto;" id="injectionPointAuftragsinfos">
             </table>
         </div>
     </div>
@@ -1143,8 +1143,15 @@ export default {
 
     <div id="step5_pruefung" class="step" ref="step5">
         <div class="mb-5 h1 text-center">Schritt {{step}}</div>
-        <div class="table table-responsive" style="max-height: 500px; overflow: auto; margin-left:-100px;" id="injectionPointKategorien">
-            <!-- <video id="videoElement" autoplay></video> -->
+        <div class="table-responsive" style="max-height: 500px; overflow: auto;" id="injectionPointKategorien">
+            <div class="container row row-col-3 justify-content-md-center" style="display: flex; margin-left: auto; margin-right: auto; font-weight: bold; padding:0; padding-bottom: 10px;">
+                    <div class="col-md-2">Prüf-Nr.</div>
+                    <div class="col">Beschreibung Prüfschritt</div>
+                    <div class="col"> </div>
+                    <div class="col" style="text-align: right;">Aktion</div>
+                    <div class="col"> </div>
+                    <div class="col">Kommentar Bearbeiter</div>
+            </div>
         </div>
     </div>
 
