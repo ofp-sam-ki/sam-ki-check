@@ -14,7 +14,7 @@
     "@capacitor/cli": "^5.5.1",
     "@capacitor/core": "^5.5.1",
     "@floating-ui/vue": "^1.0.6",
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "jszip": "^3.10.1",
     "popper.js": "^1.16.1",
