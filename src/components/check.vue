@@ -6,7 +6,8 @@ import Modell from './../../Modell.json'
 import 'bootstrap/dist/css/bootstrap.css' 
 import 'bootstrap/dist/js/bootstrap.bundle.min.js' //--> HTML Part 
 import axios from 'axios';
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner' 
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner' ;
+import Quagga from 'quagga';
 import { reactive } from 'vue';
 import JSZip from 'jszip'
 
