@@ -1318,24 +1318,33 @@ export default {
                 <div class="row">
                     <div class="col-9">
                         <div class="row">
-                            <!-- <div v-for="(value, key, index) in pruefung.pruefung" :key="key" :value="value" class="col-4 mb-3"> -->
-                            <div v-for="(value, key, index) in check.model" :key="key" :value="value" class="col-4 mb-3">
-                                <button v-if="key !== 'Eingangsinformationen'" 
+                            <div v-for="(value, key, index) in pruefung.pruefung" 
+                                :key="key" 
+                                :value="value"  
+                                class="col-4 mb-2" >
+                            <div v-if="key !== 'Eingangsinformationen'" >
+                                <button 
                                         :class="[ 'btn', 'btn-lg', 'w-100', 
-                                            { 'btn-success': value.erfuellteSchritte === value.anzahlSchritte, 
-                                            'btn-secondary': value.erfuellteSchritte !== value.anzahlSchritte } ]"
+                                                     { 'btn-success': value.erfuellteSchritte === value.anzahlSchritte, 
+                                                     'btn-secondary': value.erfuellteSchritte !== value.anzahlSchritte } ]"
                                         style="height: 10rem;" 
                                     @click="kategorieStarten(key)">
                                     <span class="title" style="font-weight:bold; ">{{ key }}</span>
-                                    <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" aria-valuemin="0" aria-valuemax="1">
-                                        <div class="progress-bar" :style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
+                                    <div class="progress" role="progressbar" 
+                                                aria-label="Basic example"  
+                                                aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="1">
+                                    <div class="progress-bar" style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
                                             {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} 
                                         </div>
                                     </div>
                                 </button>
                             </div>
+                            </div>
                         </div>
                     </div>
+
 
                     
                     <div class="col-3 card text-bg-light h3">
