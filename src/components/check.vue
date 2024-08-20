@@ -276,8 +276,8 @@ export default {
                     }   
 
 
-                    console.log("textfeld")
-                    console.log(this.check.model[firstID][displayName]["Beschreibung"])
+                    //console.log("textfeld")
+                    //console.log(this.check.model[firstID][displayName]["Beschreibung"])
 
                     text.addEventListener("input", () =>
                         {if (text.value.trim() === "") 
@@ -317,9 +317,11 @@ export default {
                                 element.classList.add('table-success');
                                 console.log("checkbox checked");
                                 this.check.model[firstID][displayName]["checkbox"] = true;
+                                //this.check.model[firstID][displayName]["erfuellt"] = true;
                             } else {
                                 element.classList.remove('table-success');
                                 this.check.model[firstID][displayName]["checkbox"] = false;
+                                //this.check.model[firstID][displayName]["erfuellt"] = false;
                                 }
                             });
 
@@ -533,8 +535,8 @@ export default {
             {
                 if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
                 let schritt = this.schrittAlsHtmlEintragBauen(schrittName, schrittInhalt, kategorieName + "." + schrittName);
-                console.log("schirtt-3")
-                console.log(schritt)
+                //console.log("schirtt-3")
+                //console.log(schritt)
                 if (!document.getElementById(kategorieName + "." + schrittName + "-schritt-div")) element.appendChild(schritt);
             }
 
@@ -633,6 +635,10 @@ export default {
 
                 let desc = document.createElement("td");
                 desc.innerHTML = "<p>" + value.Beschreibung + "</p>";
+                
+                console.log("value.Beschreibung")
+                console.log(value.Beschreibung)
+
                 row.appendChild(desc);
                 
                 let content = document.createElement("td"); /*Bedingung, nur wenne s keine Anleitung ist*/
@@ -805,10 +811,22 @@ export default {
                 this.$refs.step5.classList.add('active');
                 //alert(JSON.stringify(this.check.model, null, 2));
                 this.step++;
-
+                //this.kategorienUeberpruefen(); //--> jetzt wird alles erfüllt und grün
                 this.kategorienEinhaengen();
+                console.log("else if (this.step == 4) --> this.pruefung.pruefung")
+                //console.log(this.pruefung.pruefung)
+                //alert(JSON.stringify(this.pruefung.pruefung, null, 2));
+                //console.log("this.pruefung.pruefung.anzahlSchritte")
+                //console.log(this.pruefung.pruefung.anzahlSchritte)
 
-                for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung)) {
+                console.log("else if (this.step == 4) --> this.check.model")
+                console.log(this.check.model)
+                //alert(JSON.stringify(this.check.model, null, 2));
+                console.log("this.check.model.anzahlSchritte")
+                console.log(this.check.model.anzahlSchritte)
+
+                //for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung)) {
+                for (const [kategorieName, kategorieInhalt] of Object.entries(this.check.model)) {
                     let element = document.getElementById(kategorieName + "-kategorie-div");
                     let aktiveKategorie = this.darstellung.aktiveKategorie;
                     if (kategorieName == this.darstellung.aktiveKategorie) {
@@ -864,7 +882,7 @@ export default {
             var name = " PreferenceGerätName";
             
             console.log("submit");
-            axios.post('http://localhost:4000/pruefungen/senden?name=' + name ,this.check.model)
+            axios.post('http://localhost:4000/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
@@ -927,6 +945,9 @@ export default {
             {   
                 for (var [schrittName, schrittInhalt] of Object.entries(kategorieInhalt))
                 {
+                    //console.log("schrittInhalt[erfuellt]")
+                    //console.log(schrittInhalt["erfuellt"])
+
                     schrittInhalt["erfuellt"] = false;
                     //schrittInhalt["elementId"] = "";
                 }
@@ -950,8 +971,11 @@ export default {
         {
             console.log("kategorienUeberpruefen");
 
-            for (var [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
+            //for (var [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
+            for (var [kategorieName, kategorieInhalt] of Object.entries(this.check.model))
             {
+                console.log("this.kategorieErfuellteSchritteUeberpruefen(kategorieName); --> kategorieName")
+                console.log(kategorieName)
                 this.kategorieErfuellteSchritteUeberpruefen(kategorieName);
             }
         },
@@ -960,14 +984,18 @@ export default {
             console.log("kategorieErfuellteSchritteUeberpruefen");
 
             var erfuelltZaehler = 0;
-            for (var [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
+            //for (var [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
+            for (var [schrittName, schrittInhalt] of Object.entries(this.check.model[kategorieName]))
             {
                 if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
                 schrittInhalt["erfuellt"] = this.schrittUeberpruefen(kategorieName + "." + schrittName, schrittInhalt);
                 if (schrittInhalt.erfuellt) ++erfuelltZaehler;
             }
 
-            this.pruefung.pruefung[kategorieName].erfuellteSchritte = erfuelltZaehler;
+            //this.pruefung.pruefung[kategorieName].erfuellteSchritte = erfuelltZaehler;
+            console.log("this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler")
+            console.log(erfuelltZaehler)
+            this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler;
         },
         schrittUeberpruefen(schrittId, schritt)
         {
@@ -1214,9 +1242,9 @@ export default {
             <li><a class="dropdown-item text-center"  v-if="step==1" @click="setSettings">Einstellung</a></li>
         </ul>
         
-
-        <button class="btn btn-outline-secondary btn-lg btn-light" type="button" @click="scan_startScan">Senden</button>
-        
+        <!--
+        <button class="btn btn-outline-secondary btn-lg btn-light" type="button" @click="scan_startScan">Senden</button>  
+        -->
     </div>
 
     <!-- Einstellung -->
@@ -1318,8 +1346,9 @@ export default {
                 <div class="row">
                     <div class="col-9">
                         <div class="row">
-                            <div v-for="(value, key, index) in pruefung.pruefung" 
-                                :key="key" 
+                            <!-- <div v-for="(value, key, index) in pruefung.pruefung" -->
+                            <div v-for="(value, key, index) in check.model" 
+                                :key="key"  
                                 :value="value"  
                                 class="col-4 mb-2" >
                             <div v-if="key !== 'Eingangsinformationen'" >
@@ -1337,6 +1366,7 @@ export default {
                                                 aria-valuemax="1">
                                     <div class="progress-bar" style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
                                             {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} 
+                                            
                                         </div>
                                     </div>
                                 </button>
