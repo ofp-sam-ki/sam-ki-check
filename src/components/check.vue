@@ -347,48 +347,158 @@ export default {
                     }
                 case "Barcode":
                 {
+                    content.innerHTML = '<div id="' + id + '-schritt-div-content"></div>';
                     add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"> <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/> </svg></button> ' ;
                     
-                    add.addEventListener("click", function() {
-                            // Überprüfe, ob die getUserMedia-API verfügbar ist
-                            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                            // Öffne die Kamera
-                            navigator.mediaDevices.getUserMedia({ video: true })
-                            .then(function(stream) {
-                            // Erfolgreich die Kamera geöffnet
-                            // Nutze den Stream, um das Video-Element anzuzeigen oder für andere Zwecke
-                            })
-                            .catch(function(error) {
-                                // Fehler beim Öffnen der Kamera
-                                console.error('Fehler beim Öffnen der Kamera:', error);
+                    var vm = this;
+
+                    // Zeige den gespeicherten Barcode an, falls vorhanden
+                    let kategorieName = id.split(".")[0];
+                    let schrittName = id.split(".")[1];
+
+                    if (this.check.model[kategorieName] && this.check.model[kategorieName][schrittName] && this.check.model[kategorieName][schrittName]["Barcode"]) {
+                        let savedBarcode = this.check.model[kategorieName][schrittName]["Barcode"];
+                        let codeElement = document.createElement("div");
+                        codeElement.textContent = "Barcode: " + savedBarcode;
+                        content.appendChild(codeElement);
+                        element.classList.add('table-success');
+                    }
+
+                    add.addEventListener("click", async function () {
+                        if (Capacitor.getPlatform() === 'web') {
+                            // Web-Browser
+                            let scannerDiv = document.createElement("div");
+                            scannerDiv.id = "barcode-scanner";
+                            scannerDiv.style.position = "fixed";
+                            scannerDiv.style.top = "50%";
+                            scannerDiv.style.left = "50%";
+                            scannerDiv.style.transform = "translate(-50%, -50%)";
+                            scannerDiv.style.width = "640px"; // Fixe Breite
+                            scannerDiv.style.height = "480px"; // Fixe Höhe
+                            document.body.appendChild(scannerDiv);
+
+                            let stopbutton = document.createElement("button");
+                            stopbutton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"> <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/> </svg>';
+                            stopbutton.classList.add('btn', 'btn-primary');
+                            stopbutton.style.position = "absolute";
+                            stopbutton.style.top = "10px";
+                            stopbutton.style.right = "10px";
+
+                            stopbutton.addEventListener("click", function () {
+                                Quagga.stop();
+                                scannerDiv.remove();
+                                stopbutton.remove();
                             });
+
+                            scannerDiv.appendChild(stopbutton);
+
+                            Quagga.init({
+                                inputStream: {
+                                    name: "Live",
+                                    type: "LiveStream",
+                                    target: document.querySelector('#barcode-scanner'),
+                                    constraints: {
+                                        width: 640,
+                                        height: 480,
+                                        facingMode: "environment"
+                                    },
+                                },
+                                decoder: {
+                                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                                }
+                            }, function (err) {
+                                if (err) {
+                                    console.log(err);
+                                    return;
+                                }
+                                console.log("Initialization finished. Ready to start");
+                                Quagga.start();
+                            });
+
+                            Quagga.onDetected(function (result) {
+                                let code = result.codeResult.code;
+                                console.log("Barcode detected: " + code);
+
+                                if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
+                                if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
+                                vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
+
+                                content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                let codeElement = document.createElement("div");
+                                codeElement.textContent = "Barcode: " + code;
+                                content.appendChild(codeElement);
+
+                                element.classList.add('table-success');
+                                Quagga.stop();
+                                scannerDiv.remove();
+                                stopbutton.remove();
+                            });
+
                         } else {
-                            // Die getUserMedia-API wird nicht unterstützt
-                            console.error('getUserMedia wird nicht unterstützt');
+                            // Mobile Geräte
+                            try {
+                                // Überprüfe, ob die Kamera-Berechtigung vorhanden ist
+                                const status = await BarcodeScanner.checkPermission({ force: true });
+                                if (!status.granted) {
+                                    console.log("Kamera-Berechtigung nicht erteilt");
+                                    return;
+                                }
+
+                                // Starte den Barcode-Scanner
+                                await BarcodeScanner.hideBackground(); // Make background transparent
+                                const result = await BarcodeScanner.startScan(); // Start scanning and wait for a result
+
+                                if (result.hasContent) {
+                                    let code = result.content;
+                                    console.log("Barcode detected: " + code);
+
+                                    if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
+                                    if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
+                                    vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
+
+                                    content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                    let codeElement = document.createElement("div");
+                                    codeElement.textContent = "Barcode: " + code;
+                                    content.appendChild(codeElement);
+
+                                    element.classList.add('table-success');
+                                }
+
+                                // Stoppe den Barcode-Scanner
+                                await BarcodeScanner.stopScan();
+                            } catch (error) {
+                                console.error('Fehler beim Scannen des Barcodes:', error);
+                            }
                         }
-                        });
-                    
-                    view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
+                    });
 
                     let comment = document.createElement("input");
                     comment.type = "text";
                     comment.id = "' + id + '-schritt-div-comment";
-                    
-                    //Überprüfung, ob Inhalt schon existiert und dann einfügen
+
                     if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
 
-                    comment.addEventListener("input", () =>
-                    {if (comment.value.trim() === "") 
-                        {;} 
-                    else 
-                    {
-                        //element.classList.add('table-success');
-                        this.userInput = comment.value;
-                        this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
-                    }
+                    comment.addEventListener("input", () => {
+                        if (comment.value.trim() === "") {;} 
+                        else {
+                            this.userInput = comment.value;
+                            this.check.model[firstID][displayName]["Kommentar"] = this.userInput;
+                        }
                     });
 
                     comm.appendChild(comment);
+
+                    
+                    view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
+
+                    view.addEventListener("click", function() {
+                        // Entferne den Barcode aus dem Log
+                        if (vm.pruefung.pruefung[kategorieName] && vm.pruefung.pruefung[kategorieName][schrittName]) {
+                            delete vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"];
+                        }
+                        content.innerHTML = "";
+                        element.classList.remove('table-success');
+                    });
                     
                     break;
                 }
