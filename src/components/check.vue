@@ -60,7 +60,7 @@ export default {
             console.log("Settings")
             this.$refs.step1.classList.remove('active');
             this.$refs.step1b.classList.add('active');
-            console.log("Settings2")
+            //console.log("Settings2")
         },
         
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
@@ -113,10 +113,20 @@ export default {
             {
                 case "Foto":
                     {
-                        content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
+                        content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>"; //davor stand statt die Beschreibung "Daten absenden"
+                        //content.innerHTML = '<input type="image" id="' + id + '-schritt-div-content">';
                         add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16"> <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/> <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/> </svg> </button>';
 
                         var vm = this;
+                        let kategorieName = id.split(".")[0];
+                        let schrittName = id.split(".")[1];
+                        // Überprüfe, ob bereits ein Bild vorhanden ist
+                        if (vm.check.model[kategorieName] && vm.check.model[kategorieName][schrittName] && vm.check.model[kategorieName][schrittName]["value"]) {
+                                    let existingImageData = vm.check.model[kategorieName][schrittName]["value"];
+                                    let img = document.createElement("img");
+                                    img.src = existingImageData; // Setze die Data URL des gespeicherten Fotos als src-Wert
+                                    content.appendChild(img);
+        }
                         
                         add.addEventListener("click", function () {
                             // Überprüfe, ob die getUserMedia-API verfügbar ist
@@ -211,7 +221,7 @@ export default {
                         });
                         
                         /* add.addEventListener("change", element.classList.add('table-success')); */
-                        
+                        /*
                             let foto = document.createElement("input");
                             foto.type = "image";
                             foto.id = "' + id + '-schritt-div-content";
@@ -228,13 +238,17 @@ export default {
                             // Füge das <img>-Element dem content hinzu
                             content.appendChild(img);
                         });
+                    */
 
                     let comment = document.createElement("input");
                     comment.type = "text";
                     comment.id = "' + id + '-schritt-div-comment";
                     
                     //Überprüfung, ob Inhalt schon existiert und dann einfügen
-                    if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                    //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                    if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
+                    //console.log(this.check.model[firstID][displayName]["Kommentar"]);
+                    //console.log('this.check.model[firstID][displayName]["Kommentar"]');
 
                     comment.addEventListener("input", () =>
                     {if (comment.value.trim() === "") 
@@ -244,6 +258,8 @@ export default {
                         //element.classList.add('table-success');
                         this.userInput = comment.value;
                         this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
+                        console.log("this.check.model")
+                        console.log(this.check.model)
                     }
                     });
 
@@ -304,6 +320,8 @@ export default {
                 case "Checkbox":
                 {        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
                         content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
+                        //console.log("schritt.Beschreibung");
+                        //console.log(schritt.Beschreibung);
                         let checkbox = document.createElement("input");
                         checkbox.type = "checkbox";
                         checkbox.style.transform ="scale(2)";
@@ -315,7 +333,7 @@ export default {
                         checkbox.addEventListener("change", () => {
                             if (checkbox.checked) {
                                 element.classList.add('table-success');
-                                console.log("checkbox checked");
+                                //console.log("checkbox checked");
                                 this.check.model[firstID][displayName]["checkbox"] = true;
                                 //this.check.model[firstID][displayName]["erfuellt"] = true;
                             } else {
@@ -330,7 +348,8 @@ export default {
                         comment.id = "' + id + '-schritt-div-comment"; // hier der Kommentarbereich von Schritt 5 
 
                         //Überprüfung, ob Inhalt schon existiert und dann einfügen
-                        if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                        //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                        if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
 
                         comment.addEventListener("input", () =>
                         {if (comment.value.trim() === "") 
@@ -479,7 +498,8 @@ export default {
                     comment.type = "text";
                     comment.id = "' + id + '-schritt-div-comment";
 
-                    if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                    //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                    if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
 
                     comment.addEventListener("input", () => {
                         if (comment.value.trim() === "") {;} 
@@ -605,7 +625,7 @@ export default {
             this.$refs.step1.classList.remove('active');
             this.$refs.step2b.classList.add('active');
         },
-        modellAus()
+        modellAus() //löschen
         {
             var attachmentPoint = document.getElementById('checkInjectionPoint');
 
@@ -636,8 +656,8 @@ export default {
                 let desc = document.createElement("td");
                 desc.innerHTML = "<p>" + value.Beschreibung + "</p>";
                 
-                console.log("value.Beschreibung")
-                console.log(value.Beschreibung)
+                //console.log("value.Beschreibung")
+                //console.log(value.Beschreibung)
 
                 row.appendChild(desc);
                 
@@ -780,8 +800,8 @@ export default {
                                 name_pruefung_long.substring(0, underscoreIndex) : name_pruefung_long;
                                 this.$refs.auswahlPruefplan.value = name_pruefung
 
-                                console.log("this.$refs.auswahlPruefplan.value")
-                                console.log(this.$refs.auswahlPruefplan.value)
+                                //console.log("this.$refs.auswahlPruefplan.value")
+                                //console.log(this.$refs.auswahlPruefplan.value)
                                 this.step++;
                                 //this.step++;
 
@@ -813,7 +833,8 @@ export default {
                 this.step++;
                 //this.kategorienUeberpruefen(); //--> jetzt wird alles erfüllt und grün
                 this.kategorienEinhaengen();
-                console.log("else if (this.step == 4) --> this.pruefung.pruefung")
+                this.kategorienUeberpruefen();
+                //console.log("else if (this.step == 4) --> this.pruefung.pruefung")
                 //console.log(this.pruefung.pruefung)
                 //alert(JSON.stringify(this.pruefung.pruefung, null, 2));
                 //console.log("this.pruefung.pruefung.anzahlSchritte")
@@ -932,6 +953,7 @@ export default {
             console.log("kategorieName");
 
             return this.pruefung.pruefung[kategorieName].erfuellteSchritte == this.pruefung.pruefung[kategorieName].anzahlSchritte;
+            // was passiert
         },
         modellVorbereiten()
         {
@@ -964,7 +986,7 @@ export default {
             //this.pruefung.aktiveKategorie = kategorieName;
             //console.log(this.pruefung.aktiveKategorie);
             this.darstellung.aktiveKategorie = kategorieName;
-            console.log(this.darstellung.aktiveKategorie);
+            //console.log(this.darstellung.aktiveKategorie);
             this.nextStep();
         },
         kategorienUeberpruefen()
@@ -974,8 +996,8 @@ export default {
             //for (var [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
             for (var [kategorieName, kategorieInhalt] of Object.entries(this.check.model))
             {
-                console.log("this.kategorieErfuellteSchritteUeberpruefen(kategorieName); --> kategorieName")
-                console.log(kategorieName)
+                //console.log("this.kategorieErfuellteSchritteUeberpruefen(kategorieName); --> kategorieName")
+                //console.log(kategorieName)
                 this.kategorieErfuellteSchritteUeberpruefen(kategorieName);
             }
         },
@@ -997,7 +1019,7 @@ export default {
             console.log(erfuelltZaehler)
             this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler;
         },
-        schrittUeberpruefen(schrittId, schritt)
+        schrittUeberpruefen(schrittId, schritt) //hier true anpassen wenn in Json true ist bei checkbox 
         {
             console.log("schrittUeberpruefen");
 
@@ -1008,20 +1030,27 @@ export default {
 
             switch (schritt.Typ)
             {
-                case "Anleitung": return true;
+                case "Anleitung": return true; //nicht mitzählen - anpassen was alles mitgezählt wird  checked
                 case "Foto":
                 {
+                    console.log("case Foto")
+                    console.log(element.src)
                     if (element.src)
                         if (element.src != "") return true;
                     return false;
                 }
                 case "Checkbox":
                 {
-                    return true;
+                    //if (element.checked)
+                    //    if (element.checked != "") return true;
+                    console.log("case Checkbox")
+                    console.log(element.checked)
+                    return element.checked;
+                    //return true;
                 }
-                case "text":
+                case "Text":
                 {
-                    if (element.value != "") return true;
+                    if (element.value != "") return true; // nicht die Kommentarspalte 
                     return false;
                 }
             }
@@ -1101,8 +1130,8 @@ export default {
              // Preference Gerät Name
             //var name = "Pruefplan_1123_13082024"; // Name anpassen zu Datum und Uhrzei und Prüfname?
             //var name = "Pruefplan_" + this.getCurrentDateTime();
-            console.log("this.$refs.auswahlPruefplan.value - 2")
-            console.log(this.$refs.auswahlPruefplan.value)
+            //console.log("this.$refs.auswahlPruefplan.value - 2")
+            //console.log(this.$refs.auswahlPruefplan.value)
             var name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime();
 
             
@@ -1231,7 +1260,9 @@ export default {
             <img src="/src/assets/FinalesLogo_2022-10_rgb_aufgeräumt_gross.png" alt="Logo" width="120" class="d-inline-block align-text-top">
         </a>
         <h1 class="me-md-4">SAM-KI-Check</h1>
+        <!--
         <h2 class="me-md-4">Schritt {{step}}</h2>
+        -->
         
         <button class="btn btn-secondary btn-lg menu-button me-md-2" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" align="right">
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-list" viewBox="0 0 16 16">
@@ -1364,7 +1395,7 @@ export default {
                                                 aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" 
                                                 aria-valuemin="0" 
                                                 aria-valuemax="1">
-                                    <div class="progress-bar" style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
+                                    <div class="progress-bar" v-style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
                                             {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} 
                                             
                                         </div>

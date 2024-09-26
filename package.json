@@ -19,6 +19,7 @@
     "jszip": "^3.10.1",
     "popper.js": "^1.16.1",
     "quagga": "^0.12.1",
+    "sam-ki-check": "file:",
     "vue": "^3.3.4"
   },
   "devDependencies": {
