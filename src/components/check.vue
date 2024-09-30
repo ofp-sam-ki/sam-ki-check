@@ -10,10 +10,16 @@ import { BarcodeScanner } from '@capacitor-community/barcode-scanner' ;
 import Quagga from 'quagga';
 import { reactive } from 'vue';
 import JSZip from 'jszip'
+import { addPlatform } from '@capacitor/core';
+
+//var host = 'http://localhost:4000'
+var host = 'http://192.168.0.100:4000' // adresse backend 
+
 
 export default {
     
     beforeMount() {
+        this.host = host
         document.addEventListener("DOMContentLoaded", function(){
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
             var popoverList = popoverTriggerList.map(function(element){
@@ -21,11 +27,14 @@ export default {
             });
         });
         console.log('Client für SAM-KI-Check');
-        
+        // let host = http://192.168.0.100:4000
         //Prüfplanverzeichnis initial laden
-        axios.get('http://localhost:4000/Pruefplaeneverzeichnis_Test')
+        //var host = 'http://localhost:4000'
+        //console.log('Pfad')
+        //console.log(host +'/Pruefplaeneverzeichnis_Test')
+        axios.get(host +'/Pruefplaeneverzeichnis_Test')
         .then((response) => {
-            console.log('http://localhost:4000/Pruefplaeneverzeichnis_Test')
+            console.log(host + '/Pruefplaeneverzeichnis_Test')
             this.check.pruefplaene = response.data;
             for (const [key, value] of Object.entries(this.check.pruefplaene))
             {
@@ -40,6 +49,7 @@ export default {
         .catch(function (error) {
             console.log('error mess');
             console.error(error);
+            alert(error);
         });
 
     },
@@ -600,9 +610,9 @@ export default {
             this.pruef_status="zw_pruefung";
 
             // Übersichtsliste der zwischengespicherten Prüfungen bekommen
-            axios.get('http://localhost:4000/Zwischenspeicherverzeichnis_List')
+            axios.get(host + '/Zwischenspeicherverzeichnis_List')
             .then((response) => { 
-                console.log('http://localhost:4000/Zwischenspeicherverzeichnis_List')            
+                console.log(host + '/Zwischenspeicherverzeichnis_List')            
                 this.check.gespeicherte_pruefungen = response.data;
 
                 for (const [key, value] of Object.entries(this.check.gespeicherte_pruefungen))
@@ -727,7 +737,7 @@ export default {
                 
                 // Liste der Zwischengespeicherten Tests aktualisieren bevor diese neu zugesandt werden 
                 // (soll auch Funktionieren, wenn direkt nach Zwischenspiechern zurück auf Home-Screen und dann dort auf neue Liste zugreifen)
-                axios.get('http://localhost:4000/createZwischenspeicherverzeichnis_List')
+                axios.get(host + '/createZwischenspeicherverzeichnis_List')
                 .then((response) => {
 
                     console.log("createZwischenspeicherverzeichnis_List");
@@ -760,10 +770,10 @@ export default {
                 // Untrescheidung ob Neue PRüfung oder aus gespeicherter Liste
                 if (this.pruef_status == "neue_pruefung"){
 
-                    await axios.get('http://localhost:4000/pruefplaene/' + this.$refs.auswahlPruefplan.value)
+                    await axios.get(host + '/pruefplaene/' + this.$refs.auswahlPruefplan.value)
                         .then((response) => {
                             if (response.status == 200) {
-                                console.log("http://localhost:4000/pruefplaene/")
+                                console.log(host + "/pruefplaene/")
                                 this.$refs.step2a.classList.remove('active');
                                 this.$refs.step3.classList.add('active');
                                 this.step++;
@@ -785,9 +795,9 @@ export default {
                 }
                 else if (this.pruef_status == "zw_pruefung"){
 
-                    await axios.get('http://localhost:4000/pruefungen/speichern/' + this.$refs.auswahlGespeichertePruefung.value) //ändern
+                    await axios.get(host + '/pruefungen/speichern/' + this.$refs.auswahlGespeichertePruefung.value) //ändern
                     .then((response) => {       
-                            console.log("http://localhost:4000/pruefungen/speichern/")            
+                            console.log(host + "/pruefungen/speichern/")            
                             if (response.status == 200) {
 
                                 this.$refs.step2b.classList.remove('active');
@@ -903,7 +913,7 @@ export default {
             var name = " PreferenceGerätName";
             
             console.log("submit");
-            axios.post('http://localhost:4000/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
+            axios.post(host + '/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
@@ -1137,7 +1147,7 @@ export default {
             
             console.log("pruefungZwischenspeichern()");
 
-            axios.post('http://localhost:4000/pruefungen/speichern?name=' + name ,this.check.model) // hier Endung mit ? anpassen? 
+            axios.post(host + '/pruefungen/speichern?name=' + name ,this.check.model) // hier Endung mit ? anpassen? 
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
@@ -1204,6 +1214,7 @@ export default {
             nextStepMoeglich: true,
             scanNichtVerfuegbar: false,
             userInput: "",
+            host: "",
             check: {
                 //model: Modell,
                 model: {},
@@ -1301,7 +1312,7 @@ export default {
                         <tr>
                         <th scope="row">2</th>
                         <td>IP</td>
-                        <td>Eingabe...</td>
+                        <td>host</td>
                         </tr>
                     </tbody>
                 </table>
