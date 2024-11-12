@@ -104,7 +104,7 @@ export default {
             let content = document.createElement("div");
             content.classList.add("col");
 
-            //leer?
+            //Bilder und Barcode
             let edit = document.createElement("div");
             edit.classList.add("col");
 
@@ -136,7 +136,7 @@ export default {
                                     let existingImageData = vm.check.model[kategorieName][schrittName]["value"];
                                     let img = document.createElement("img");
                                     img.src = existingImageData; // Setze die Data URL des gespeicherten Fotos als src-Wert
-                                    content.appendChild(img);
+                                    edit.appendChild(img);
                                     element.classList.add('table-success');
                                 }
                         
@@ -199,8 +199,8 @@ export default {
                                         vm.pruefung.pruefung[kategorieName][schrittName]["value"] = imgData;
 
                                         // Füge das <img>-Element dem content hinzu
-                                        content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass das vorherige Foto entfernt wird
-                                        content.appendChild(img);
+                                        edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass das vorherige Foto entfernt wird
+                                        edit.appendChild(img);
 
                                         element.classList.add('table-success');
                                     });
@@ -277,9 +277,8 @@ export default {
 
                         view.addEventListener("click", function()
                         {
-                            content.innerHTML = "";
+                            edit.innerHTML = "";
                             element.classList.remove('table-success');
-                            value.kategorieName -= 1;
                         });
                         break;
                     }
@@ -381,7 +380,7 @@ export default {
                     }
                 case "Barcode":
                 {
-                    content.innerHTML = '<div id="' + id + '-schritt-div-content"></div>';
+                    content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
                     add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"> <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/> </svg></button> ' ;
                     
                     var vm = this;
@@ -394,7 +393,7 @@ export default {
                         let savedBarcode = this.check.model[kategorieName][schrittName]["Barcode"];
                         let codeElement = document.createElement("div");
                         codeElement.textContent = "Barcode: " + savedBarcode;
-                        content.appendChild(codeElement);
+                        edit.appendChild(codeElement);
                         element.classList.add('table-success');
                     }
 
@@ -457,10 +456,10 @@ export default {
                                 if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                 vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
 
-                                content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                 let codeElement = document.createElement("div");
                                 codeElement.textContent = "Barcode: " + code;
-                                content.appendChild(codeElement);
+                                edit.appendChild(codeElement);
 
                                 element.classList.add('table-success');
                                 Quagga.stop();
@@ -490,10 +489,10 @@ export default {
                                     if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                     vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
 
-                                    content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                    edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                     let codeElement = document.createElement("div");
                                     codeElement.textContent = "Barcode: " + code;
-                                    content.appendChild(codeElement);
+                                    edit.appendChild(codeElement);
 
                                     element.classList.add('table-success');
                                 }
@@ -535,7 +534,7 @@ export default {
                         if (vm.pruefung.pruefung[kategorieName] && vm.pruefung.pruefung[kategorieName][schrittName]) {
                             delete vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"];
                         }
-                        content.innerHTML = "";
+                        edit.innerHTML = "";
                         element.classList.remove('table-success');
                     });
                     
