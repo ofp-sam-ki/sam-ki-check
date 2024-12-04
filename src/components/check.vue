@@ -12,13 +12,8 @@ import { reactive } from 'vue';
 import JSZip from 'jszip'
 import { addPlatform } from '@capacitor/core';
 
-<<<<<<< HEAD
-// var host = 'http://localhost:4000'
-var host = 'http://192.168.0.100:4000' // adresse backend 
-=======
 var host = 'http://localhost:4000'
 //var host = 'http://192.168.0.100:4000' // adresse backend 
->>>>>>> 6ab192199f14a0aa41a36eee7f5d5e1c8ae99a8e
 
 
 export default {
@@ -202,6 +197,7 @@ export default {
                                         if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
                                         if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                         vm.pruefung.pruefung[kategorieName][schrittName]["value"] = imgData;
+                                        vm.pruefung.pruefung[kategorieName][schrittName]["erfuellt"] = true;
 
                                         // Füge das <img>-Element dem content hinzu
                                         edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass das vorherige Foto entfernt wird
@@ -316,6 +312,7 @@ export default {
                             element.classList.add('table-success');
                             this.userInput = text.value;
                             this.check.model[firstID][displayName]["Beschreibung"]=this.userInput
+                            this.check.model[firstID][displayName]["erfuellt"]=true; //hier richtig?
                         }
                     });
 
@@ -350,11 +347,11 @@ export default {
                             if (checkbox.checked) {
                                 element.classList.add('table-success');
                                 //console.log("checkbox checked");
-                                this.check.model[firstID][displayName]["checkbox"] = true;
+                                this.check.model[firstID][displayName]["erfuellt"] = true;
                                 //this.check.model[firstID][displayName]["erfuellt"] = true;
                             } else {
                                 element.classList.remove('table-success');
-                                this.check.model[firstID][displayName]["checkbox"] = false;
+                                this.check.model[firstID][displayName]["erfuellt"] = false;
                                 //this.check.model[firstID][displayName]["erfuellt"] = false;
                                 }
                             });
@@ -460,6 +457,7 @@ export default {
                                 if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
                                 if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                 vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
+                                vm.pruefung.pruefung[kategorieName][schrittName]["erfuellt"] = true;
 
                                 edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                 let codeElement = document.createElement("div");
@@ -493,6 +491,7 @@ export default {
                                     if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
                                     if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                     vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
+                                    vm.pruefung.pruefung[kategorieName][schrittName]["erfuellt"] = true;
 
                                     edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                     let codeElement = document.createElement("div");
@@ -995,6 +994,7 @@ export default {
                 }
                 kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length;
                 kategorieInhalt["erfuellteSchritte"] = 0;
+                console.log(" --> bei modellVorbereiten() : erfuellteSchritte = 0")
             }
 
             this.pruefung.pruefung = vorbereitet;
@@ -1024,24 +1024,41 @@ export default {
         kategorieErfuellteSchritteUeberpruefen(kategorieName)
         {
             console.log("kategorieErfuellteSchritteUeberpruefen");
-
+            console.log(" --> kategorieErfuellteSchritteUeberpruefen() : erfuelltZaehler = 0")
             var erfuelltZaehler = 0;
+
             //for (var [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
             for (var [schrittName, schrittInhalt] of Object.entries(this.check.model[kategorieName]))
+
             {
                 if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
                 schrittInhalt["erfuellt"] = this.schrittUeberpruefen(kategorieName + "." + schrittName, schrittInhalt);
                 if (schrittInhalt.erfuellt) ++erfuelltZaehler;
+                console.log("this.check.model[kategorieName]")
+                console.log(this.check.model[kategorieName])
             }
 
             //this.pruefung.pruefung[kategorieName].erfuellteSchritte = erfuelltZaehler;
             console.log("this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler")
+            //erfuelltZaehler =5;
             console.log(erfuelltZaehler)
             this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler;
         },
         schrittUeberpruefen(schrittId, schritt) //hier true anpassen wenn in Json true ist bei checkbox 
         {
             console.log("schrittUeberpruefen");
+            console.log("schrittId")
+            console.log(schrittId)
+            console.log("schritt")
+            console.log(schritt)
+            console.log("schritt.Typ")
+            console.log(schritt.Typ)
+            console.log("schritt.erfuellt")
+            console.log(schritt.erfuellt)
+            console.log("schritt.Beschreibung")
+            console.log(schritt.Beschreibung)
+            console.log("Benötigt")
+            console.log(schritt.Benötigt)
 
             let id = schrittId + "-schritt-div-content";
             let element = document.getElementById(id);
@@ -1054,23 +1071,36 @@ export default {
                 case "Foto":
                 {
                     console.log("case Foto")
-                    console.log(element.src)
-                    if (element.src)
-                        if (element.src != "") return true;
+                    //console.log(element.src)
+                    // if value dann true 
+                    if (schritt.erfuellt)
+                        return true;
                     return false;
                 }
                 case "Checkbox":
                 {
                     //if (element.checked)
                     //    if (element.checked != "") return true;
-                    console.log("case Checkbox")
-                    console.log(element.checked)
-                    return element.checked;
-                    //return true;
+                    console.log("case Checkbox#")
+                    console.log(schritt.checkbox)
+                    if (schritt.erfuellt)
+                        return true
+                    //console.log(element.checked)
+                    //return element.checked;
+                    return false;
+                }
+                case "Barcode":
+                {
+                    if (schritt.erfuellt)
+                        return true;
+                    return false;
                 }
                 case "Text":
                 {
-                    if (element.value != "") return true; // nicht die Kommentarspalte 
+                    //if (element.value != "") return true; // nicht die Kommentarspalte 
+                    //return false;
+                    if (schritt.erfuellt)
+                        return true;
                     return false;
                 }
             }
@@ -1416,10 +1446,15 @@ export default {
                                   <span class="title" style="font-weight:bold; ">{{ key }}</span>
                                       <div class="progress" role="progressbar" 
                                                 aria-label="Basic example"  
-                                                aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" 
+                                                :aria-valuenow="value.erfuellteSchritte / value.anzahlSchritte " 
                                                 aria-valuemin="0" 
                                                 aria-valuemax="1">
-                                    <div class="progress-bar" v-style="{ width: (value.erfuellteSchritte / value.anzahlSchritte * 100) + '%' }"> 
+                                                <!--
+                                    <div class="progress-bar" v-style="{ width: ((value.erfuellteSchritte / value.anzahlSchritte) * 100) + '%' }"> 
+                                    <div class="progress-bar" style="width: 25%;"> 
+                                        -->
+                                    
+                                    <div class="progress-bar" :style="{ width: ((value.erfuellteSchritte / value.anzahlSchritte) * 100) + '%' }"> 
                                             {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} 
                                             
                                         </div>
