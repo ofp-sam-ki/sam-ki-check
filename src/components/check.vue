@@ -12,8 +12,13 @@ import { reactive } from 'vue';
 import JSZip from 'jszip'
 import { addPlatform } from '@capacitor/core';
 
+<<<<<<< HEAD
 // var host = 'http://localhost:4000'
 var host = 'http://192.168.0.100:4000' // adresse backend 
+=======
+var host = 'http://localhost:4000'
+//var host = 'http://192.168.0.100:4000' // adresse backend 
+>>>>>>> 6ab192199f14a0aa41a36eee7f5d5e1c8ae99a8e
 
 
 export default {
@@ -73,6 +78,7 @@ export default {
             //console.log("Settings2")
         },
         
+
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
         {
             var firstID= this.devideString(id);
@@ -103,7 +109,7 @@ export default {
             let content = document.createElement("div");
             content.classList.add("col");
 
-            //leer?
+            //Bilder und Barcode
             let edit = document.createElement("div");
             edit.classList.add("col");
 
@@ -135,8 +141,9 @@ export default {
                                     let existingImageData = vm.check.model[kategorieName][schrittName]["value"];
                                     let img = document.createElement("img");
                                     img.src = existingImageData; // Setze die Data URL des gespeicherten Fotos als src-Wert
-                                    content.appendChild(img);
-        }
+                                    edit.appendChild(img);
+                                    element.classList.add('table-success');
+                                }
                         
                         add.addEventListener("click", function () {
                             // Überprüfe, ob die getUserMedia-API verfügbar ist
@@ -197,8 +204,8 @@ export default {
                                         vm.pruefung.pruefung[kategorieName][schrittName]["value"] = imgData;
 
                                         // Füge das <img>-Element dem content hinzu
-                                        content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass das vorherige Foto entfernt wird
-                                        content.appendChild(img);
+                                        edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass das vorherige Foto entfernt wird
+                                        edit.appendChild(img);
 
                                         element.classList.add('table-success');
                                     });
@@ -251,35 +258,31 @@ export default {
                     */
 
                     let comment = document.createElement("input");
-                    comment.type = "text";
-                    comment.id = "' + id + '-schritt-div-comment";
-                    
-                    //Überprüfung, ob Inhalt schon existiert und dann einfügen
-                    //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
-                    if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
-                    //console.log(this.check.model[firstID][displayName]["Kommentar"]);
-                    //console.log('this.check.model[firstID][displayName]["Kommentar"]');
+                        comment.type = "text";
+                        comment.id = "' + id + '-schritt-div-comment"; // hier der Kommentarbereich von Schritt 5 
 
-                    comment.addEventListener("input", () =>
-                    {if (comment.value.trim() === "") 
-                        {;} 
-                    else 
-                    {
-                        //element.classList.add('table-success');
-                        this.userInput = comment.value;
-                        this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
-                        console.log("this.check.model")
-                        console.log(this.check.model)
-                    }
+                        //Überprüfung, ob Inhalt schon existiert und dann einfügen
+                        //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                        if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
+
+                        comment.addEventListener("input", () =>
+                        {if (comment.value.trim() === "") 
+                            {;} 
+                        else 
+                        {
+                            //element.classList.add('table-success');
+                            this.userInput = comment.value;
+                            this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
+                        }
                     });
 
-                    comm.appendChild(comment);
+                        comm.appendChild(comment);
 
                         view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
 
                         view.addEventListener("click", function()
                         {
-                            content.innerHTML = "";
+                            edit.innerHTML = "";
                             element.classList.remove('table-success');
                         });
                         break;
@@ -338,7 +341,10 @@ export default {
                         checkbox.id = "' + id + '-schritt-div-checkbox";
 
                         //Überprüfung, ob Checkbox schon ausgewählt und dann einfügen
-                        if (this.check.model[firstID][displayName]["checkbox"]) {checkbox.checked = this.check.model[firstID][displayName]["checkbox"];}                        
+                        if (this.check.model[firstID][displayName]["checkbox"]) 
+                                {checkbox.checked = this.check.model[firstID][displayName]["checkbox"];
+                                element.classList.add('table-success');
+                                }                        
                         
                         checkbox.addEventListener("change", () => {
                             if (checkbox.checked) {
@@ -379,7 +385,7 @@ export default {
                     }
                 case "Barcode":
                 {
-                    content.innerHTML = '<div id="' + id + '-schritt-div-content"></div>';
+                    content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
                     add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"> <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"> <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5M.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5m15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5M3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0zm2 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0z"/> </svg></button> ' ;
                     
                     var vm = this;
@@ -392,7 +398,7 @@ export default {
                         let savedBarcode = this.check.model[kategorieName][schrittName]["Barcode"];
                         let codeElement = document.createElement("div");
                         codeElement.textContent = "Barcode: " + savedBarcode;
-                        content.appendChild(codeElement);
+                        edit.appendChild(codeElement);
                         element.classList.add('table-success');
                     }
 
@@ -455,10 +461,10 @@ export default {
                                 if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                 vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
 
-                                content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                 let codeElement = document.createElement("div");
                                 codeElement.textContent = "Barcode: " + code;
-                                content.appendChild(codeElement);
+                                edit.appendChild(codeElement);
 
                                 element.classList.add('table-success');
                                 Quagga.stop();
@@ -488,10 +494,10 @@ export default {
                                     if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
                                     vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
 
-                                    content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                    edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                     let codeElement = document.createElement("div");
                                     codeElement.textContent = "Barcode: " + code;
-                                    content.appendChild(codeElement);
+                                    edit.appendChild(codeElement);
 
                                     element.classList.add('table-success');
                                 }
@@ -505,21 +511,25 @@ export default {
                     });
 
                     let comment = document.createElement("input");
-                    comment.type = "text";
-                    comment.id = "' + id + '-schritt-div-comment";
+                        comment.type = "text";
+                        comment.id = "' + id + '-schritt-div-comment"; // hier der Kommentarbereich von Schritt 5 
 
-                    //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
-                    if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
+                        //Überprüfung, ob Inhalt schon existiert und dann einfügen
+                        //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
+                        if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
 
-                    comment.addEventListener("input", () => {
-                        if (comment.value.trim() === "") {;} 
-                        else {
+                        comment.addEventListener("input", () =>
+                        {if (comment.value.trim() === "") 
+                            {;} 
+                        else 
+                        {
+                            //element.classList.add('table-success');
                             this.userInput = comment.value;
-                            this.check.model[firstID][displayName]["Kommentar"] = this.userInput;
+                            this.check.model[firstID][displayName]["Kommentar"]=this.userInput;
                         }
                     });
 
-                    comm.appendChild(comment);
+                        comm.appendChild(comment);
 
                     
                     view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
@@ -529,7 +539,7 @@ export default {
                         if (vm.pruefung.pruefung[kategorieName] && vm.pruefung.pruefung[kategorieName][schrittName]) {
                             delete vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"];
                         }
-                        content.innerHTML = "";
+                        edit.innerHTML = "";
                         element.classList.remove('table-success');
                     });
                     
@@ -1275,14 +1285,18 @@ export default {
         <h2 class="me-md-4">Schritt {{step}}</h2>
         -->
         
-        <button class="btn btn-secondary btn-lg menu-button me-md-2" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" align="right">
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-list" viewBox="0 0 16 16">
+            <button v-if="step==1" class="btn btn-secondary btn-lg menu-button me-md-2 " type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" align="right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-list" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-            </svg>
-        </button>
-        <ul class="dropdown-menu" v-if="step==1" aria-labelledby="dropdownMenuButton1">
-            <li><a class="dropdown-item text-center"  v-if="step==1" @click="setSettings">Einstellung</a></li>
-        </ul>
+                </svg>
+            </button>
+            <ul class="dropdown-menu" v-if="step==1" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item text-center"  v-if="step==1" @click="setSettings">Einstellung</a></li>
+            </ul>
+
+    
+
+
         
         <!--
         <button class="btn btn-outline-secondary btn-lg btn-light" type="button" @click="scan_startScan">Senden</button>  
@@ -1393,15 +1407,14 @@ export default {
                                 :key="key"  
                                 :value="value"  
                                 class="col-4 mb-2" >
-                            <div v-if="key !== 'Eingangsinformationen'" >
-                                <button 
+                                <button v-if="key!='Eingangsinformationen'"
                                         :class="[ 'btn', 'btn-lg', 'w-100', 
                                                      { 'btn-success': value.erfuellteSchritte === value.anzahlSchritte, 
                                                      'btn-secondary': value.erfuellteSchritte !== value.anzahlSchritte } ]"
                                         style="height: 10rem;" 
                                     @click="kategorieStarten(key)">
-                                    <span class="title" style="font-weight:bold; ">{{ key }}</span>
-                                    <div class="progress" role="progressbar" 
+                                  <span class="title" style="font-weight:bold; ">{{ key }}</span>
+                                      <div class="progress" role="progressbar" 
                                                 aria-label="Basic example"  
                                                 aria-valuenow="{{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }}" 
                                                 aria-valuemin="0" 
@@ -1410,17 +1423,15 @@ export default {
                                             {{ value.erfuellteSchritte }}/{{ value.anzahlSchritte }} 
                                             
                                         </div>
-                                    </div>
+                                    </div> 
                                 </button>
-                            </div>
+                            
                             </div>
                         </div>
                     </div>
-
-
-                    
+                                      
                     <div class="col-3 card text-bg-light h3">
-                    <!-- erstmal Dummy-Daten -->
+                    <!-- Spalte rechts: Übersicht Eingangsinformationen -->
                         <div class="row" style="padding: 10px; width:" v-for="(value, key, index) in check.model.Eingangsinformationen" :key="key" :value="value">
                             <div class="col" :id="'ueberblick.eingangsinformationen.' + key" v-if="index < (Object.keys(check.model.Eingangsinformationen).length - 2)">
                                 <span style="font-size: 14px;">{{ key+": " }} {{ value.Beschreibung }}</span>
@@ -1451,19 +1462,19 @@ export default {
 
     <!-- Weiter und Zurück Buttons -->
     <div class="m-3">
-      <button type="button" v-if="step==1" disabled class="btn btn-outline-secondary btn-lg step-button-left-inactive fs-1 position-absolute bottom-0 start-0">Zurück</button>
-      <button type="button" @click="prevStep" v-if="step!=1" class="btn btn-outline-secondary btn-bg-white btn-lg step-button-left fs-1 position-absolute bottom-0 start-0">Zurück</button>
+      <button type="button" v-if="step==1" disabled class="btn btn-outline-secondary step-button-left-inactive position-absolute bottom-0 start-0">Zurück</button>
+      <button type="button" @click="prevStep" v-if="step!=1" class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-0 start-0">Zurück</button>
 
-      <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary btn-lg step-button-right-inactive fs-1 position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
-      <button type="button" @click="pruefungZwischenspeichern" v-if="step<5 && step!=1 && nextStepMoeglich" class="btn btn-secondary btn-lg step-button-left fs-1 position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
+      <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary step-button-right-inactive position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
+      <button type="button" v-if="step<5 && step!=1 && step!=2 && nextStepMoeglich" @click="pruefungZwischenspeichern" class="btn btn-secondary step-button-left position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
 
-      <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary btn-lg step-button-right-inactive fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
-      <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
+      <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary step-button-right-inactive position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
+      <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary step-button-right position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
       <!--
       <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       -->
       <!-- <button type="button" @click="submit" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" data-bs-placement="left" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?">Senden</button> -->
-      <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
+      <button type="button" @click="submit" v-if="step==4" class="btn btn-primary step-button-right position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       <!-- <button type="button" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" title="Popover title" data-bs-content="Here's some amazing content.">Senden</button> -->
     </div>
 
