@@ -12,7 +12,7 @@ import { reactive } from 'vue';
 import JSZip from 'jszip'
 import { addPlatform } from '@capacitor/core';
 
-//var host = 'http://localhost:4000'
+// var host = 'http://localhost:4000'
 var host = 'http://192.168.0.100:4000' // adresse backend 
 
 
