@@ -348,11 +348,11 @@ export default {
                                 element.classList.add('table-success');
                                 //console.log("checkbox checked");
                                 this.check.model[firstID][displayName]["erfuellt"] = true;
-                                //this.check.model[firstID][displayName]["erfuellt"] = true;
+                                this.check.model[firstID][displayName]["checkbox"] = true;
                             } else {
                                 element.classList.remove('table-success');
                                 this.check.model[firstID][displayName]["erfuellt"] = false;
-                                //this.check.model[firstID][displayName]["erfuellt"] = false;
+                                this.check.model[firstID][displayName]["checkbox"] = false;
                                 }
                             });
 
