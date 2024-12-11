@@ -24,31 +24,6 @@ export default {
             });
         });
         console.log('Client für SAM-KI-Check');
-        // let host = http://192.168.0.100:4000
-        //Prüfplanverzeichnis initial laden
-        //var host = 'http://localhost:4000'
-        //console.log('Pfad')
-        //console.log(host +'/Pruefplaeneverzeichnis_Test')
-        axios.get(this.host +'/Pruefplaeneverzeichnis_Test')
-        .then((response) => {
-            console.log(this.host + '/Pruefplaeneverzeichnis_Test')
-            this.check.pruefplaene = response.data;
-            for (const [key, value] of Object.entries(this.check.pruefplaene))
-            {
-                this.check.pruefplane_lesbar[key] = "";
-                for (const pruefplanname in value)
-                {
-                    this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
-                }
-                this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
-            }
-        })
-        .catch(function (error) {
-            console.log('error mess');
-            console.error(error);
-            alert(error);
-        });
-
     },
     methods: {
         async saveHost() {
@@ -64,7 +39,27 @@ export default {
                 this.host = value;
                 // Validate host connectivity
                 try {
-                    await axios.get(this.host + '/health');
+                    //await axios.get(this.host + '/health');
+
+                    await axios.get(this.host +'/Pruefplaeneverzeichnis_Test')
+                    .then((response) => {
+                        console.log(this.host + '/Pruefplaeneverzeichnis_Test')
+                        this.check.pruefplaene = response.data;
+                        for (const [key, value] of Object.entries(this.check.pruefplaene))
+                        {
+                            this.check.pruefplane_lesbar[key] = "";
+                            for (const pruefplanname in value)
+                            {
+                                this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                            }
+                            this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log('error mess');
+                        console.error(error);
+                        alert(error);
+                    });
                 } catch (error) {
                     // Show error alert if host is unreachable
                     alert(`Kann zum Server ${this.host} nicht verbinden.\Bitte Netzwerkverbindung, Einstellung oder Server prüfen.`);
@@ -632,9 +627,9 @@ export default {
             this.pruef_status="zw_pruefung";
 
             // Übersichtsliste der zwischengespicherten Prüfungen bekommen
-            axios.get(host + '/Zwischenspeicherverzeichnis_List')
+            axios.get(this.host + '/Zwischenspeicherverzeichnis_List')
             .then((response) => { 
-                console.log(host + '/Zwischenspeicherverzeichnis_List')            
+                console.log(this.host + '/Zwischenspeicherverzeichnis_List')            
                 this.check.gespeicherte_pruefungen = response.data;
 
                 for (const [key, value] of Object.entries(this.check.gespeicherte_pruefungen))
@@ -759,7 +754,7 @@ export default {
                 
                 // Liste der Zwischengespeicherten Tests aktualisieren bevor diese neu zugesandt werden 
                 // (soll auch Funktionieren, wenn direkt nach Zwischenspiechern zurück auf Home-Screen und dann dort auf neue Liste zugreifen)
-                axios.get(host + '/createZwischenspeicherverzeichnis_List')
+                axios.get(this.host + '/createZwischenspeicherverzeichnis_List')
                 .then((response) => {
 
                     console.log("createZwischenspeicherverzeichnis_List");
@@ -792,10 +787,10 @@ export default {
                 // Untrescheidung ob Neue PRüfung oder aus gespeicherter Liste
                 if (this.pruef_status == "neue_pruefung"){
 
-                    await axios.get(host + '/pruefplaene/' + this.$refs.auswahlPruefplan.value)
+                    await axios.get(this.host + '/pruefplaene/' + this.$refs.auswahlPruefplan.value)
                         .then((response) => {
                             if (response.status == 200) {
-                                console.log(host + "/pruefplaene/")
+                                console.log(this.host + "/pruefplaene/")
                                 this.$refs.step2a.classList.remove('active');
                                 this.$refs.step3.classList.add('active');
                                 this.step++;
@@ -817,9 +812,9 @@ export default {
                 }
                 else if (this.pruef_status == "zw_pruefung"){
 
-                    await axios.get(host + '/pruefungen/speichern/' + this.$refs.auswahlGespeichertePruefung.value) //ändern
+                    await axios.get(this.host + '/pruefungen/speichern/' + this.$refs.auswahlGespeichertePruefung.value) //ändern
                     .then((response) => {       
-                            console.log(host + "/pruefungen/speichern/")            
+                            console.log(this.host + "/pruefungen/speichern/")            
                             if (response.status == 200) {
 
                                 this.$refs.step2b.classList.remove('active');
@@ -935,7 +930,7 @@ export default {
             var name = " PreferenceGerätName";
             
             console.log("submit");
-            axios.post(host + '/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
+            axios.post(this.host + '/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
@@ -1169,7 +1164,7 @@ export default {
             
             console.log("pruefungZwischenspeichern()");
 
-            axios.post(host + '/pruefungen/speichern?name=' + name ,this.check.model) // hier Endung mit ? anpassen? 
+            axios.post(this.host + '/pruefungen/speichern?name=' + name ,this.check.model) // hier Endung mit ? anpassen? 
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
