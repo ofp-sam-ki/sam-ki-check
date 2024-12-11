@@ -11,15 +11,12 @@ import Quagga from 'quagga';
 import { reactive } from 'vue';
 import JSZip from 'jszip'
 import { addPlatform } from '@capacitor/core';
-
-var host = 'http://localhost:4000'
-//var host = 'http://192.168.0.100:4000' // adresse backend 
-
+import { Preferences } from '@capacitor/preferences';
 
 export default {
-    
     beforeMount() {
-        this.host = host
+        this.loadHost(); // Add this line at the start
+
         document.addEventListener("DOMContentLoaded", function(){
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
             var popoverList = popoverTriggerList.map(function(element){
@@ -32,9 +29,9 @@ export default {
         //var host = 'http://localhost:4000'
         //console.log('Pfad')
         //console.log(host +'/Pruefplaeneverzeichnis_Test')
-        axios.get(host +'/Pruefplaeneverzeichnis_Test')
+        axios.get(this.host +'/Pruefplaeneverzeichnis_Test')
         .then((response) => {
-            console.log(host + '/Pruefplaeneverzeichnis_Test')
+            console.log(this.host + '/Pruefplaeneverzeichnis_Test')
             this.check.pruefplaene = response.data;
             for (const [key, value] of Object.entries(this.check.pruefplaene))
             {
@@ -54,6 +51,26 @@ export default {
 
     },
     methods: {
+        async saveHost() {
+            await Preferences.set({
+                key: 'host',
+                value: this.host
+            });
+            window.location.reload();
+        },        
+        async loadHost() {
+            const { value } = await Preferences.get({ key: 'host' });
+            if (value) {
+                this.host = value;
+                // Validate host connectivity
+                try {
+                    await axios.get(this.host + '/health');
+                } catch (error) {
+                    // Show error alert if host is unreachable
+                    alert(`Kann zum Server ${this.host} nicht verbinden.\Bitte Netzwerkverbindung, Einstellung oder Server prüfen.`);
+                }
+            }
+        },
         devideString(input)
         {
             var dotIndex = input.indexOf('.');
@@ -1303,29 +1320,12 @@ export default {
         <div >
             <div class="mb-5 h1 text-center">Einstellung</div>
             <div class="text-center">
-                <table class="table1 table-responsive" style="max-height: 600px; overflow: auto; margin-left:200px;">
-                    <thead>
-                        <tr>
-                        <th scope="col">Parameter</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                        <th scope="row">1</th>
-                        <td>Preference Gerät Name</td>
-                        <td>Eingabe...</td>
-                        </tr>
-                        <tr>
-                        <th scope="row">2</th>
-                        <td>IP</td>
-                        <td>host</td>
-                        </tr>
-                    </tbody>
-                </table>
-        </div>
+                <div class="input-group mb-3 w-50 mx-auto">
+                    <span class="input-group-text">Host</span>
+                    <input type="text" class="form-control" v-model="host" @change="saveHost" placeholder="Enter host URL">
+                    <p>Hinweis: Angabe mit Protokoll und Port, ohne Schrägstrich, bspw: http://localhost:4000</p>
+                </div>
+            </div>
         </div>
     </div>
 
