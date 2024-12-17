@@ -351,8 +351,8 @@ export default {
                                 this.check.model[firstID][displayName]["checkbox"] = true;
                             } else {
                                 element.classList.remove('table-success');
-                                this.check.model[firstID][displayName]["checkbox"] = false;
                                 this.check.model[firstID][displayName]["erfuellt"] = false;
+                                this.check.model[firstID][displayName]["checkbox"] = false;
                                 }
                             });
 
