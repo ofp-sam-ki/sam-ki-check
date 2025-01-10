@@ -98,7 +98,7 @@ export default {
                     console.error(error);
                 });
         },
-        
+
         devideString(input)
         {
             var dotIndex = input.indexOf('.');
