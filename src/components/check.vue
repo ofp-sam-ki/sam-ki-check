@@ -11,15 +11,18 @@ import Quagga from 'quagga';
 import { reactive } from 'vue';
 import JSZip from 'jszip'
 import { addPlatform } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
 
-var host = 'http://localhost:4000'
+//var host = 'http://localhost:4000'
 //var host = 'http://192.168.0.100:4000' // adresse backend 
 
 
 export default {
     
     beforeMount() {
-        this.host = host
+        //this.host = host
+        this.loadHost(); // Add this line at the start
+
         document.addEventListener("DOMContentLoaded", function(){
             var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
             var popoverList = popoverTriggerList.map(function(element){
@@ -27,33 +30,75 @@ export default {
             });
         });
         console.log('Client für SAM-KI-Check');
-        // let host = http://192.168.0.100:4000
-        //Prüfplanverzeichnis initial laden
-        //var host = 'http://localhost:4000'
-        //console.log('Pfad')
-        //console.log(host +'/Pruefplaeneverzeichnis_Test')
-        axios.get(host +'/Pruefplaeneverzeichnis_Test')
-        .then((response) => {
-            console.log(host + '/Pruefplaeneverzeichnis_Test')
-            this.check.pruefplaene = response.data;
-            for (const [key, value] of Object.entries(this.check.pruefplaene))
-            {
-                this.check.pruefplane_lesbar[key] = "";
-                for (const pruefplanname in value)
-                {
-                    this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
-                }
-                this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
-            }
-        })
-        .catch(function (error) {
-            console.log('error mess');
-            console.error(error);
-            alert(error);
-        });
-
     },
     methods: {
+        async saveHost() {
+            await Preferences.set({
+                key: 'host',
+                value: this.host
+            });
+            window.location.reload();
+        },        
+        async loadHost() {
+            const { value } = await Preferences.get({ key: 'host' });
+            //value = 'http://localhost:4000' // Anpassung damit es ohne Preference läuft 
+            if (value) {
+                this.host = value;
+                // Validate host connectivity
+                try {
+                    //await axios.get(this.host + '/health');
+                    //await axios.get(this.host + '/health');
+                    await axios.get(this.host +'/Pruefplaeneverzeichnis_Test')
+                    .then((response) => {
+                        console.log(this.host + '/Pruefplaeneverzeichnis_Test')
+                        this.check.pruefplaene = response.data;
+                        for (const [key, value] of Object.entries(this.check.pruefplaene))
+                        {
+                            this.check.pruefplane_lesbar[key] = "";
+                            for (const pruefplanname in value)
+                            {
+                                this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                            }
+                            this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log('error mess');
+                        console.error(error);
+                        alert(error);
+                    });
+                } catch (error) {
+                    // Show error alert if host is unreachable
+                    alert(`Kann zum Server ${this.host} nicht verbinden.\Bitte Netzwerkverbindung, Einstellung oder Server prüfen.`);
+                }
+            }
+        }, 
+                
+        updateZwischenspeicherListe()
+        {
+            axios.get(this.host + '/createZwischenspeicherverzeichnis_List')
+                .then((response) => {
+
+                    console.log("createZwischenspeicherverzeichnis_List");
+
+                    this.check.pruefplaene = response.data;
+                    for (const [key, value] of Object.entries(this.check.pruefplaene))
+                    {
+                        this.check.pruefplane_lesbar[key] = "";
+                        for (const pruefplanname in value)
+                        {
+                            this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                        }
+                        this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+                    }
+
+                })
+                .catch(function (error) {
+                    console.log('error mess');
+                    console.error(error);
+                });
+        },
+        
         devideString(input)
         {
             var dotIndex = input.indexOf('.');
@@ -152,7 +197,7 @@ export default {
                                     let video = document.createElement("video");
                                     video.id = "fotoaufnahme";
                                     video.srcObject = stream;
-                                    console.log(video.srcObject);
+                                    //console.log(video.srcObject);
                                     video.autoplay = true;
                                     video.style.position = "fixed";
                                     video.style.top = "50%";
@@ -184,7 +229,7 @@ export default {
                                         context.drawImage(video, 0, 0, canvas.width, canvas.height);
                                         let imgData = canvas.toDataURL("image/png");
 
-                                        console.log(imgData);
+                                        //console.log(imgData);
 
                                         // Foto als Data URL (base64) und weiterverarbeiten
 
@@ -232,8 +277,7 @@ export default {
                                     console.error('Fehler beim Öffnen der Kamera:', error);
                                 });
                         });
-                        
-                        /* add.addEventListener("change", element.classList.add('table-success')); */
+                                                /* add.addEventListener("change", element.classList.add('table-success')); */
                         /*
                             let foto = document.createElement("input");
                             foto.type = "image";
@@ -252,18 +296,16 @@ export default {
                             content.appendChild(img);
                         });
                     */
-
                     let comment = document.createElement("input");
                         comment.type = "text";
                         comment.id = "' + id + '-schritt-div-comment"; // hier der Kommentarbereich von Schritt 5 
-
                         //Überprüfung, ob Inhalt schon existiert und dann einfügen
                         //if (this.check.model[firstID][displayName]["Kommentar"]) text.value = this.check.model[firstID][displayName]["Kommentar"];
                         if (this.check.model[firstID][displayName]["Kommentar"]) comment.value = this.check.model[firstID][displayName]["Kommentar"];
 
                         comment.addEventListener("input", () =>
                         {if (comment.value.trim() === "") 
-                            {;} 
+                            {this.check.model[firstID][displayName]["Kommentar"]="";} 
                         else 
                         {
                             //element.classList.add('table-success');
@@ -280,6 +322,13 @@ export default {
                         {
                             edit.innerHTML = "";
                             element.classList.remove('table-success');
+                            // Aktualisiere die Datenstruktur
+                            let kategorieName = id.split(".")[0];
+                            let schrittName = id.split(".")[1];
+                            if (vm.pruefung.pruefung[kategorieName] && vm.pruefung.pruefung[kategorieName][schrittName]) {
+                                delete vm.pruefung.pruefung[kategorieName][schrittName]["value"];
+                                vm.pruefung.pruefung[kategorieName][schrittName]["erfuellt"] = false;
+                            }
                         });
                         break;
                     }
@@ -366,7 +415,7 @@ export default {
 
                         comment.addEventListener("input", () =>
                         {if (comment.value.trim() === "") 
-                            {;} 
+                            {this.check.model[firstID][displayName]["Kommentar"]="";} 
                         else 
                         {
                             //element.classList.add('table-success');
@@ -519,7 +568,7 @@ export default {
 
                         comment.addEventListener("input", () =>
                         {if (comment.value.trim() === "") 
-                            {;} 
+                            {this.check.model[firstID][displayName]["Kommentar"]="";} 
                         else 
                         {
                             //element.classList.add('table-success');
@@ -589,7 +638,11 @@ export default {
 
             for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung))
             {
-                if (kategorieName == "Eingangsinformationen") continue;
+                if (kategorieName == "Eingangsinformationen") {
+                    
+                    
+                    continue;
+                }
                 let kategorie = this.kategorieAlsHtmlEintragBauen(kategorieName);
                 if (!document.getElementById(kategorieName + "-kategorie-div")) element.appendChild(kategorie);
             }
@@ -607,7 +660,7 @@ export default {
         {
             console.log("FunktionNeuePruefung")
             this.pruef_status = "neue_pruefung";
-            console.log(this.pruef_status)
+            //console.log(this.pruef_status)
             this.nextStep();
             this.$refs.step1.classList.remove('active');
             this.$refs.step2a.classList.add('active');
@@ -619,9 +672,9 @@ export default {
             this.pruef_status="zw_pruefung";
 
             // Übersichtsliste der zwischengespicherten Prüfungen bekommen
-            axios.get(host + '/Zwischenspeicherverzeichnis_List')
+            axios.get(this.host + '/Zwischenspeicherverzeichnis_List')
             .then((response) => { 
-                console.log(host + '/Zwischenspeicherverzeichnis_List')            
+                console.log(this.host + '/Zwischenspeicherverzeichnis_List')            
                 this.check.gespeicherte_pruefungen = response.data;
 
                 for (const [key, value] of Object.entries(this.check.gespeicherte_pruefungen))
@@ -744,9 +797,15 @@ export default {
         async nextStep() {
             if (this.step == 1) {
                 
+                /* console.log("step 1");
+                console.log(this.check.pruefplaene);
+                console.log("step 1--");
+                console.log(this.check.pruefplane_lesbar); */
                 // Liste der Zwischengespeicherten Tests aktualisieren bevor diese neu zugesandt werden 
                 // (soll auch Funktionieren, wenn direkt nach Zwischenspiechern zurück auf Home-Screen und dann dort auf neue Liste zugreifen)
-                axios.get(host + '/createZwischenspeicherverzeichnis_List')
+
+
+   /*              axios.get(this.host + '/createZwischenspeicherverzeichnis_List')
                 .then((response) => {
 
                     console.log("createZwischenspeicherverzeichnis_List");
@@ -766,12 +825,16 @@ export default {
                 .catch(function (error) {
                     console.log('error mess');
                     console.error(error);
-                });
+                }); */
+
+                this.updateZwischenspeicherListe();
 
                 this.step++;
+                //console.log("this.step++");
             } else if (this.step == 2) {
+                //this.updateZwischenspeicherListe();
                 console.log("Step 2 - Prüfpläne")
-                console.log(this.pruef_status)
+                //console.log(this.pruef_status)
                 if (this.pruefplanId == "" && this.gespeicherte_pruefungId == "") {
                     return;
                 } 
@@ -779,15 +842,16 @@ export default {
                 // Untrescheidung ob Neue PRüfung oder aus gespeicherter Liste
                 if (this.pruef_status == "neue_pruefung"){
 
-                    await axios.get(host + '/pruefplaene/' + this.$refs.auswahlPruefplan.value)
+                    await axios.get(this.host + '/pruefplaene/' + this.$refs.auswahlPruefplan.value)
                         .then((response) => {
                             if (response.status == 200) {
-                                console.log(host + "/pruefplaene/")
+                                console.log(this.host + "/pruefplaene/")
                                 this.$refs.step2a.classList.remove('active');
                                 this.$refs.step3.classList.add('active');
                                 this.step++;
 
                                 this.check.model = response.data;
+                                this.auswahlPruefplan=this.$refs.auswahlPruefplan.value;
                                 this.modellVorbereiten();
 
                                 this.eingangsinformationenEinhaengen();
@@ -804,9 +868,14 @@ export default {
                 }
                 else if (this.pruef_status == "zw_pruefung"){
 
-                    await axios.get(host + '/pruefungen/speichern/' + this.$refs.auswahlGespeichertePruefung.value) //ändern
-                    .then((response) => {       
-                            console.log(host + "/pruefungen/speichern/")            
+                    //console.log("first this.$refs.auswahlGespeichertePruefung.value");
+                    //console.log(this.$refs.auswahlGespeichertePruefung.value);
+
+                    await axios.get(this.host + '/pruefungen/speichern/' + this.$refs.auswahlGespeichertePruefung.value) //ändern
+                    .then((response) => {   
+                            //console.log("first response.data");
+                            //console.log(response.data);    
+                            //console.log(this.host + "/pruefungen/speichern/")            
                             if (response.status == 200) {
 
                                 this.$refs.step2b.classList.remove('active');
@@ -814,16 +883,25 @@ export default {
 
                                 // Aus string der Json Dateinamen jeweils nur den Anfangstext nehmen und rest abschneiden ab "_"
                                 let name_pruefung_long = this.$refs.auswahlGespeichertePruefung.value
+                                //console.log("this.$refs.auswahlGespeichertePruefung.value");
+                                //console.log(this.$refs.auswahlGespeichertePruefung.value);
                                 let underscoreIndex = name_pruefung_long.indexOf('_');
+                                //console.log(underscoreIndex)
                                 let name_pruefung = underscoreIndex !== -1 ?
                                 name_pruefung_long.substring(0, underscoreIndex) : name_pruefung_long;
-                                this.$refs.auswahlPruefplan.value = name_pruefung
+                                //console.log(name_pruefung)
+                                this.$refs.auswahlPruefplan.value = name_pruefung;
+                                this.auswahlPruefplan = name_pruefung;
 
                                 //console.log("this.$refs.auswahlPruefplan.value")
                                 //console.log(this.$refs.auswahlPruefplan.value)
                                 this.step++;
                                 //this.step++;
+                                //console.log("before response.data this.check.model");
+                                //console.log(this.check.model);
 
+                                //console.log("response.data");
+                                //console.log(response.data);
                                 this.check.model = response.data;
                                 this.modellVorbereiten();
 
@@ -842,28 +920,22 @@ export default {
                         });
                     }       
             } else if (this.step == 3) {
+                //this.updateZwischenspeicherListe();
                 this.$refs.step3.classList.remove('active');
                 this.$refs.step4.classList.add('active');
+                this.kategorienEinhaengen();
+                this.kategorienUeberpruefen();
                 this.step++;
             } else if (this.step == 4) {
+                //this.updateZwischenspeicherListe();
                 this.$refs.step4.classList.remove('active');
                 this.$refs.step5.classList.add('active');
                 //alert(JSON.stringify(this.check.model, null, 2));
                 this.step++;
+  
                 //this.kategorienUeberpruefen(); //--> jetzt wird alles erfüllt und grün
                 this.kategorienEinhaengen();
                 this.kategorienUeberpruefen();
-                //console.log("else if (this.step == 4) --> this.pruefung.pruefung")
-                //console.log(this.pruefung.pruefung)
-                //alert(JSON.stringify(this.pruefung.pruefung, null, 2));
-                //console.log("this.pruefung.pruefung.anzahlSchritte")
-                //console.log(this.pruefung.pruefung.anzahlSchritte)
-
-                console.log("else if (this.step == 4) --> this.check.model")
-                console.log(this.check.model)
-                //alert(JSON.stringify(this.check.model, null, 2));
-                console.log("this.check.model.anzahlSchritte")
-                console.log(this.check.model.anzahlSchritte)
 
                 //for (const [kategorieName, kategorieInhalt] of Object.entries(this.pruefung.pruefung)) {
                 for (const [kategorieName, kategorieInhalt] of Object.entries(this.check.model)) {
@@ -889,6 +961,7 @@ export default {
             if (this.step == 2)
             {
                 this.$refs.step2a.classList.remove('active');
+                this.$refs.step2b.classList.remove('active');
                 this.$refs.step1.classList.add('active');
             }
 
@@ -907,32 +980,45 @@ export default {
                 this.$refs.step3.classList.add('active');
                 let element = document.getElementById("Eingangsinformationen-kategorie-div");
                 element.style.display = "block";
+                console.log("in if prevStep 4 ")
             }
 
             if (this.step == 5)
             {
+                this.kategorienEinhaengen();
+                this.kategorienUeberpruefen();
                 this.$refs.step5.classList.remove('active');
                 this.$refs.step4.classList.add('active');
+                console.log("in if prevStep 5 ")
             }
 
             if (this.step > 1) --this.step;
         },
-        submit() {
+        
+        submit() { // ++++++++++++++++++++++++#######################################Stand 17.12.24++++++++++++++++++++++++++++++++++++++++
             // Preference Gerät Name - noch ändern zum Name des Prüfauftrags (automatisch auslesen)
-            var name = " PreferenceGerätName";
+            //var name = " PreferenceGerätName";
+            this.updateZwischenspeicherListe();
+            //console.log(this.$refs);
+            //console.log(this.auswahlPruefplan);
+
+            var name = this.auswahlPruefplan + "_" + this.getCurrentDateTime();
+            console.log("name");
+            console.log(name);
             
             console.log("submit");
-            axios.post(host + '/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
+            axios.post(this.host + '/pruefungen/senden?name=' + name ,this.check.model) // --> Anpassen an Backend David
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
-                    console.log(response)
+                    //console.log(response)
                 })
             .catch(function (error) {
                 console.log('error mess');
                 console.error(error);
             });
-            console.log("Alert");
+            //console.log("Alert");
+            this.alertMessage = "Erfolgreich gesendet!";
             this.showAlert = true;
             setTimeout(() => {
                 this.showAlert = false;
@@ -949,6 +1035,16 @@ export default {
                 this.$refs.step5.classList.remove('active');
                 this.$refs.step4.classList.remove('active');
                 this.$refs.step1.classList.add('active');
+                // Alle Elemente mit der Klasse 'table-success' auswählen
+                const elements = document.querySelectorAll('.table-success');
+
+                // Durch die Elemente iterieren und die Klasse entfernen
+                elements.forEach(element => {
+                element.classList.remove('table-success');
+                });
+
+                console.log('Alle "table-success"-Klassen wurden entfernt.');
+
             }, 3000);
 
             //this.step = 1;
@@ -979,22 +1075,36 @@ export default {
             console.log("modellVorbereiten");
 
             var vorbereitet = this.check.model;
-            console.log("vorbereitet");
-            console.log(vorbereitet);
+            //console.log("vorbereitet");
+            //console.log(vorbereitet);
 
             for (var [kategorieName, kategorieInhalt] of Object.entries(vorbereitet))
             {   
-                for (var [schrittName, schrittInhalt] of Object.entries(kategorieInhalt))
+/*                 for (var [schrittName, schrittInhalt] of Object.entries(kategorieInhalt))
                 {
-                    //console.log("schrittInhalt[erfuellt]")
-                    //console.log(schrittInhalt["erfuellt"])
+                    console.log("schrittInhalt");
+                    console.log(schrittInhalt);
+                    console.log('schrittInhalt["erfuellt"]');
+                    console.log(schrittInhalt["erfuellt"]);
 
-                    schrittInhalt["erfuellt"] = false;
+                    //schrittInhalt["erfuellt"] = false;
+                    
                     //schrittInhalt["elementId"] = "";
+                } */
+                //kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length -2;
+
+                if ("anzahlSchritte" in kategorieInhalt) {
+                    kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length - 2;
+                } else {
+                    kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length;
                 }
-                kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length;
+
+
+                //kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length -2;
+
+
                 kategorieInhalt["erfuellteSchritte"] = 0;
-                console.log(" --> bei modellVorbereiten() : erfuellteSchritte = 0")
+                //console.log(" --> bei modellVorbereiten() : erfuellteSchritte = 0")
             }
 
             this.pruefung.pruefung = vorbereitet;
@@ -1023,8 +1133,8 @@ export default {
         },
         kategorieErfuellteSchritteUeberpruefen(kategorieName)
         {
-            console.log("kategorieErfuellteSchritteUeberpruefen");
-            console.log(" --> kategorieErfuellteSchritteUeberpruefen() : erfuelltZaehler = 0")
+            //console.log("kategorieErfuellteSchritteUeberpruefen");
+            //console.log(" --> kategorieErfuellteSchritteUeberpruefen() : erfuelltZaehler = 0")
             var erfuelltZaehler = 0;
 
             //for (var [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
@@ -1034,19 +1144,19 @@ export default {
                 if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
                 schrittInhalt["erfuellt"] = this.schrittUeberpruefen(kategorieName + "." + schrittName, schrittInhalt);
                 if (schrittInhalt.erfuellt) ++erfuelltZaehler;
-                console.log("this.check.model[kategorieName]")
-                console.log(this.check.model[kategorieName])
+                //console.log("this.check.model[kategorieName]")
+                //console.log(this.check.model[kategorieName])
             }
 
             //this.pruefung.pruefung[kategorieName].erfuellteSchritte = erfuelltZaehler;
-            console.log("this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler")
+            //console.log("this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler")
             //erfuelltZaehler =5;
-            console.log(erfuelltZaehler)
+            //console.log(erfuelltZaehler)
             this.check.model[kategorieName].erfuellteSchritte = erfuelltZaehler;
         },
         schrittUeberpruefen(schrittId, schritt) //hier true anpassen wenn in Json true ist bei checkbox 
         {
-            console.log("schrittUeberpruefen");
+            /* console.log("schrittUeberpruefen");
             console.log("schrittId")
             console.log(schrittId)
             console.log("schritt")
@@ -1058,7 +1168,7 @@ export default {
             console.log("schritt.Beschreibung")
             console.log(schritt.Beschreibung)
             console.log("Benötigt")
-            console.log(schritt.Benötigt)
+            console.log(schritt.Benötigt) */
 
             let id = schrittId + "-schritt-div-content";
             let element = document.getElementById(id);
@@ -1082,7 +1192,7 @@ export default {
                     //if (element.checked)
                     //    if (element.checked != "") return true;
                     console.log("case Checkbox#")
-                    console.log(schritt.checkbox)
+                    //console.log(schritt.checkbox)
                     if (schritt.erfuellt)
                         return true
                     //console.log(element.checked)
@@ -1182,22 +1292,45 @@ export default {
             //var name = "Pruefplan_" + this.getCurrentDateTime();
             //console.log("this.$refs.auswahlPruefplan.value - 2")
             //console.log(this.$refs.auswahlPruefplan.value)
-            var name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime();
 
+
+/*             var name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime();
+            //var name = this.$refs.auswahlGespeichertePruefung.value + "_" + this.getCurrentDateTime();
+            console.log("this.$refs.auswahlGespeichertePruefung.value #####################################");
+            console.log(this.$refs.auswahlGespeichertePruefung.value);
+            console.log("this.$refs.auswahlPruefplan.value");
+            console.log(this.$refs.auswahlPruefplan.value); */
+
+            //----------------
+            var name;
+
+            if (this.$refs.auswahlPruefplan.value.trim() === "") {
+            // Wenn leer, erweitern mit getCurrentDateTime()
+            name = this.$refs.auswahlGespeichertePruefung.value;
             
-            console.log("pruefungZwischenspeichern()");
+            //console.log("If was done")
+            } else {
+                // Wenn nicht leer, den Wert aus auswahlGespeichertePruefung verwenden
+                name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime();
+                //console.log("else was done")
+            }
+            
+            //console.log("pruefungZwischenspeichern()");
 
-            axios.post(host + '/pruefungen/speichern?name=' + name ,this.check.model) // hier Endung mit ? anpassen? 
+            axios.post(this.host + '/pruefungen/speichern?name=' + name ,this.check.model) // hier Endung mit ? anpassen? 
                 .then((response) => 
                 {
                     console.log("Submission sucess.")
-                    console.log(response)
+                    //console.log(response)
+                    // Entferne den Inhalt von this.$refs.auswahlGespeichertePruefung.value
+                    this.$refs.auswahlGespeichertePruefung.value = "";
                 })
             .catch(function (error) {
                 console.log('error mess');
                 console.error(error);
             });
-            console.log("Alert");
+            //console.log("Alert");
+            this.alertMessage = "Erfolgreich gespeichert!";
             this.showAlert = true;
             setTimeout(() => {
                 this.showAlert = false;
@@ -1213,8 +1346,51 @@ export default {
 
                 this.$refs.step5.classList.remove('active');
                 this.$refs.step4.classList.remove('active');
+                this.$refs.step3.classList.remove('active');
                 this.$refs.step1.classList.add('active');
+
+
+                // Alle Elemente mit der Klasse 'table-success' auswählen
+                const elements = document.querySelectorAll('.table-success');
+
+                // Durch die Elemente iterieren und die Klasse entfernen
+                elements.forEach(element => {
+                element.classList.remove('table-success');
+                });
+
+                console.log('Alle "table-success"-Klassen wurden entfernt.');
+                this.updateZwischenspeicherListe();
+                
+
+              /*   for (element in elements){
+                    element.classList.remove('table-success');
+                } */
             }, 3000);
+
+/*             axios.get(this.host +'/Pruefplaeneverzeichnis_Test')
+                .then((response) => {
+                    console.log(this.host + '/Pruefplaeneverzeichnis_Test')
+                    this.check.pruefplaene = response.data;
+                    for (const [key, value] of Object.entries(this.check.pruefplaene))
+                    {
+                        this.check.pruefplane_lesbar[key] = "";
+                        for (const pruefplanname in value)
+                        {
+                            this.check.pruefplane_lesbar[key] += value[pruefplanname] + ", "
+                        }
+                        this.check.pruefplane_lesbar[key] = this.check.pruefplane_lesbar[key].substring(0, this.check.pruefplane_lesbar[key].length - 2);
+                    }
+                })
+                .catch(function (error) {
+                    console.log('error mess');
+                    console.error(error);
+                    alert(error);
+                }); */
+
+
+
+
+
 
             //this.step = 1;
             //this.modellVorbereiten();           
@@ -1222,7 +1398,7 @@ export default {
             // hier die Version von david mit Zip
             let zip = new JSZip();
             let elements = document.querySelectorAll("[type='image']");
-            console.log("pruefungZwischenspeichern")
+            //console.log("pruefungZwischenspeichern")
             if (elements.length == 0) return;
             // Loop through the selected elements
             for (var i = 0; i < elements.length; i++) {
@@ -1298,7 +1474,23 @@ export default {
                 }
             }
         }
-    }
+    },
+    computed: {
+        allRequiredEntriesFulfilled() {
+            for (const [key, value] of Object.entries(this.check.model)) {
+
+                    if (key == "Eingangsinformationen") continue;
+       
+                    if (value.erfuellteSchritte !== value.anzahlSchritte) {
+                        console.log("allRequiredEntriesFulfilled() is False");
+                        return false; // Sobald ein Eintrag die Bedingung nicht erfüllt, wird `false` zurückgegeben.
+                    }
+                }
+                
+                console.log("allRequiredEntriesFulfilled() is True");
+                return true; // Wenn alle Einträge die Bedingung erfüllen, wird `true` zurückgegeben.
+            }
+        }
 }
 
 </script>
@@ -1338,29 +1530,12 @@ export default {
         <div >
             <div class="mb-5 h1 text-center">Einstellung</div>
             <div class="text-center">
-                <table class="table1 table-responsive" style="max-height: 600px; overflow: auto; margin-left:200px;">
-                    <thead>
-                        <tr>
-                        <th scope="col">Parameter</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                        <th scope="row">1</th>
-                        <td>Preference Gerät Name</td>
-                        <td>Eingabe...</td>
-                        </tr>
-                        <tr>
-                        <th scope="row">2</th>
-                        <td>IP</td>
-                        <td>host</td>
-                        </tr>
-                    </tbody>
-                </table>
-        </div>
+                <div class="input-group mb-3 w-50 mx-auto">
+                    <span class="input-group-text">Host</span>
+                    <input type="text" class="form-control" v-model="host" @change="saveHost" placeholder="Enter host URL">
+                    <p>Hinweis: Angabe mit Protokoll und Port, ohne Schrägstrich, bspw: http://localhost:4000</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1444,11 +1619,12 @@ export default {
                                         style="height: 10rem;" 
                                     @click="kategorieStarten(key)">
                                   <span class="title" style="font-weight:bold; ">{{ key }}</span>
-                                      <div class="progress" role="progressbar" 
+                                        <div class="progress" role="progressbar" 
                                                 aria-label="Basic example"  
                                                 :aria-valuenow="value.erfuellteSchritte / value.anzahlSchritte " 
                                                 aria-valuemin="0" 
                                                 aria-valuemax="1">
+                                                
                                                 <!--
                                     <div class="progress-bar" v-style="{ width: ((value.erfuellteSchritte / value.anzahlSchritte) * 100) + '%' }"> 
                                     <div class="progress-bar" style="width: 25%;"> 
@@ -1509,12 +1685,12 @@ export default {
       <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       -->
       <!-- <button type="button" @click="submit" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" data-bs-placement="left" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?">Senden</button> -->
-      <button type="button" @click="submit" v-if="step==4" class="btn btn-primary step-button-right position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
+      <button type="button" @click="submit" v-if="step==4 && allRequiredEntriesFulfilled" class="btn btn-primary step-button-right position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       <!-- <button type="button" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" title="Popover title" data-bs-content="Here's some amazing content.">Senden</button> -->
     </div>
 
     <div v-if="showAlert" class="alert alert-success custom-alert">
-        <strong>Erfolgreich gesendet!</strong> Sie werden zurück zur Startseite geleitet.
+        <strong>{{ alertMessage }}</strong> Sie werden zurück zur Startseite geleitet.
       </div>
       
      
