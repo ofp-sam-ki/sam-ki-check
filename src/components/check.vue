@@ -191,7 +191,11 @@ export default {
                                 console.log("mediaDevices nicht verfügbar");
                                 return;
                             }
-                            navigator.mediaDevices.getUserMedia({ video: true, facingMode: 'environment' })
+                            navigator.mediaDevices.getUserMedia({ 
+                                video: {
+                                    facingMode: { ideal: 'environment' } // Rückkamera anfordern
+                                }
+                            })
                                 .then(function (stream) {
                                     console.log("Starte Webcam-Stream")
                                     let video = document.createElement("video");
