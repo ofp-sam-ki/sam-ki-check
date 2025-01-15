@@ -191,7 +191,7 @@ export default {
                                 console.log("mediaDevices nicht verfügbar");
                                 return;
                             }
-                            navigator.mediaDevices.getUserMedia({ video: true })
+                            navigator.mediaDevices.getUserMedia({ video: true, facingMode: 'environment' })
                                 .then(function (stream) {
                                     console.log("Starte Webcam-Stream")
                                     let video = document.createElement("video");
