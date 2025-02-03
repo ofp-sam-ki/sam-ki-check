@@ -121,7 +121,7 @@ export default {
 
         schrittAlsHtmlEintragBauen(displayName, schritt, id)
         {
-            var firstID= this.devideString(id);
+            var firstID = this.devideString(id);
             
 
             let element = document.getElementById(id + "-schritt-div");
@@ -253,6 +253,11 @@ export default {
                                         edit.appendChild(img);
 
                                         element.classList.add('table-success');
+                                        video.remove();
+                                        //video = null;
+
+                                        startbutton.remove();
+                                        stopbutton.remove();
                                     });
 
                                     stopbutton.addEventListener("click", function () {
@@ -281,25 +286,7 @@ export default {
                                     console.error('Fehler beim Öffnen der Kamera:', error);
                                 });
                         });
-                                                /* add.addEventListener("change", element.classList.add('table-success')); */
-                        /*
-                            let foto = document.createElement("input");
-                            foto.type = "image";
-                            foto.id = "' + id + '-schritt-div-content";
 
-                            foto.addEventListener("input", function()
-                                {if (foto = empty) 
-                                    {element.classList.add('table-success');} 
-                                else {element.classList.remove('table-success');}
-
-                            // Erstelle ein <img>-Element, um das gespeicherte Foto anzuzeigen
-                            let img = document.createElement("img");
-                            img.src = imgData; // Setze die Data URL des Fotos als Wert für das src-Attribut
-
-                            // Füge das <img>-Element dem content hinzu
-                            content.appendChild(img);
-                        });
-                    */
                     let comment = document.createElement("input");
                         comment.type = "text";
                         comment.id = "' + id + '-schritt-div-comment"; // hier der Kommentarbereich von Schritt 5 
@@ -383,8 +370,7 @@ export default {
                 case "Checkbox":
                 {        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
                         content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
-                        //console.log("schritt.Beschreibung");
-                        //console.log(schritt.Beschreibung);
+
                         let checkbox = document.createElement("input");
                         checkbox.type = "checkbox";
                         checkbox.style.transform ="scale(2)";
@@ -453,8 +439,6 @@ export default {
                     }
 
                     add.addEventListener("click", async function () {
-                        if (Capacitor.getPlatform() === 'web') {
-                            // Web-Browser
                             let scannerDiv = document.createElement("div");
                             scannerDiv.id = "barcode-scanner";
                             scannerDiv.style.position = "fixed";
@@ -468,9 +452,11 @@ export default {
                             let stopbutton = document.createElement("button");
                             stopbutton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"> <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/> </svg>';
                             stopbutton.classList.add('btn', 'btn-primary');
-                            stopbutton.style.position = "absolute";
-                            stopbutton.style.top = "10px";
-                            stopbutton.style.right = "10px";
+                            //stopbutton.style.position = "absolute";
+                            stopbutton.style.position = "fixed";
+                            stopbutton.style.top = "26%";
+                            stopbutton.style.left = "65%";
+                            stopbutton.style.transform = "translateX(-50%)";
 
                             stopbutton.addEventListener("click", function () {
                                 Quagga.stop();
@@ -478,7 +464,7 @@ export default {
                                 stopbutton.remove();
                             });
 
-                            scannerDiv.appendChild(stopbutton);
+                            document.body.appendChild(stopbutton);
 
                             Quagga.init({
                                 inputStream: {
@@ -505,7 +491,10 @@ export default {
 
                             Quagga.onDetected(function (result) {
                                 let code = result.codeResult.code;
+                                let format = result.codeResult.format; 
                                 console.log("Barcode detected: " + code);
+                                console.log("Decoder used: " + format);
+
 
                                 if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
                                 if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
@@ -522,45 +511,8 @@ export default {
                                 scannerDiv.remove();
                                 stopbutton.remove();
                             });
-
-                        } else {
-                            // Mobile Geräte
-                            try {
-                                // Überprüfe, ob die Kamera-Berechtigung vorhanden ist
-                                const status = await BarcodeScanner.checkPermission({ force: true });
-                                if (!status.granted) {
-                                    console.log("Kamera-Berechtigung nicht erteilt");
-                                    return;
-                                }
-
-                                // Starte den Barcode-Scanner
-                                await BarcodeScanner.hideBackground(); // Make background transparent
-                                const result = await BarcodeScanner.startScan(); // Start scanning and wait for a result
-
-                                if (result.hasContent) {
-                                    let code = result.content;
-                                    console.log("Barcode detected: " + code);
-
-                                    if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
-                                    if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
-                                    vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
-                                    vm.pruefung.pruefung[kategorieName][schrittName]["erfuellt"] = true;
-
-                                    edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
-                                    let codeElement = document.createElement("div");
-                                    codeElement.textContent = "Barcode: " + code;
-                                    edit.appendChild(codeElement);
-
-                                    element.classList.add('table-success');
-                                }
-
-                                // Stoppe den Barcode-Scanner
-                                await BarcodeScanner.stopScan();
-                            } catch (error) {
-                                console.error('Fehler beim Scannen des Barcodes:', error);
-                            }
-                        }
                     });
+
 
                     let comment = document.createElement("input");
                         comment.type = "text";
@@ -963,7 +915,7 @@ export default {
             console.log("prevStep");
 
             if (this.step == 2)
-            {
+            {   
                 this.$refs.step2a.classList.remove('active');
                 this.$refs.step2b.classList.remove('active');
                 this.$refs.step1.classList.add('active');
@@ -971,11 +923,24 @@ export default {
 
             if (this.step == 3)
             {
-                //this.$refs.step3.classList.remove('active');
-                let element = document.getElementById("Eingangsinformationen-kategorie-div");
+                // Prüfplan zurücksetzen
+                //this.auswahlPruefplan = ""; 
+                //this.pruef_status = "";
+                //this.userInput = "";
+                //this.$refs.auswahlPruefplan.value = {}; 
+                //this.check.model = {}; 
+             
+                let element = document.getElementById(kategorieName + "-kategorie-div");
                 element.style.display = "none";
-                this.$refs.step3.classList.remove('active');   
+                element.innerHTML = "";
+                this.$refs.step3.classList.remove('active'); 
                 this.$refs.step2a.classList.add('active');
+                const elements = document.querySelectorAll('.table-success');
+
+                // Durch die Elemente iterieren und die Klasse entfernen
+                elements.forEach(element => {
+                element.classList.remove('table-success');
+                });
             }
 
             if (this.step == 4)
@@ -998,7 +963,66 @@ export default {
 
             if (this.step > 1) --this.step;
         },
-        
+
+        cancelPruefung(){
+            // Bestätigungs-Pop-up
+            this.showModal = true; // Modal anzeigen
+        },
+        confirmCancel() {
+            // Wenn der Benutzer bestätigt, zurück zu step1
+            this.step = 1; // Schritt zurücksetzen
+            this.showModal = false;   
+                        
+            this.darstellung.aktiveKategorie = {};
+
+            this.$refs.step1.classList.add('active'); // Schritt 1 aktivieren
+            this.$refs.step2a.classList.remove('active'); // Schritt 2 nicht aktiv
+            this.$refs.step3.classList.remove('active'); // Schritt 3 nicht aktiv
+            this.$refs.step4.classList.remove('active'); // Schritt 3 nicht aktiv
+            this.$refs.step5.classList.remove('active'); // Schritt 3 nicht aktiv
+
+            // Alle Kategorien zurücksetzen
+            this.resetAllCategories();
+
+            const elements = document.querySelectorAll('.table-success');
+
+            // Durch die Elemente iterieren und die Klasse entfernen
+            elements.forEach(element => {
+            element.classList.remove('table-success');
+            element.innerHTML = "";
+            });
+        },
+        resetAllCategories() {
+            //for (const key in this.check.model) {
+                
+                for (const [kategorieName, kategorieInhalt] of Object.entries(this.check.model)) {
+                    let element = document.getElementById(kategorieName + "-kategorie-div");
+                    let aktiveKategorie = this.darstellung.aktiveKategorie;
+                    if (kategorieName == this.darstellung.aktiveKategorie) {
+                        element.style.display = "none";
+                    } else {
+                        //element.classList.remove("active");
+                        console.log(kategorieName)
+                        console.log("remove active")
+                        element.style.display = "none";
+                        element.innerHTML ="";
+                    }
+                }
+
+            // Auch die Eingangsinformationen zurücksetzen, falls vorhanden
+            let eingangElement = document.getElementById("Eingangsinformationen-kategorie-div");
+            if (eingangElement) {
+                eingangElement.style.display = "none"; // Sichtbarkeit auf "none" setzen
+                eingangElement.innerHTML = ""; // Inhalt leeren
+            }
+
+            this.check.model = {};
+        },
+
+        cancelCancel() {
+            this.showModal = false; // Modal schließen, wenn der Benutzer "Nein" klickt
+        },
+    
         submit() { // ++++++++++++++++++++++++#######################################Stand 17.12.24++++++++++++++++++++++++++++++++++++++++
             // Preference Gerät Name - noch ändern zum Name des Prüfauftrags (automatisch auslesen)
             //var name = " PreferenceGerätName";
@@ -1033,8 +1057,9 @@ export default {
                 console.log("submit geht nicht")
             }
             setTimeout(() => {
-                this.step = 1;
-                this.model = {};
+                //this.step = 1;
+                //this.check.model = {};
+                this.resetAllCategories();
 
                 this.$refs.step5.classList.remove('active');
                 this.$refs.step4.classList.remove('active');
@@ -1051,7 +1076,7 @@ export default {
 
             }, 3000);
 
-            //this.step = 1;
+            this.step = 1;
             //this.modellVorbereiten();
         },
         checkAlle() {
@@ -1290,22 +1315,7 @@ export default {
         },
 
         pruefungZwischenspeichern() {
-            // v1 ohne zip nur direkt model json
-             // Preference Gerät Name
-            //var name = "Pruefplan_1123_13082024"; // Name anpassen zu Datum und Uhrzei und Prüfname?
-            //var name = "Pruefplan_" + this.getCurrentDateTime();
-            //console.log("this.$refs.auswahlPruefplan.value - 2")
-            //console.log(this.$refs.auswahlPruefplan.value)
-
-
-/*             var name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime();
-            //var name = this.$refs.auswahlGespeichertePruefung.value + "_" + this.getCurrentDateTime();
-            console.log("this.$refs.auswahlGespeichertePruefung.value #####################################");
-            console.log(this.$refs.auswahlGespeichertePruefung.value);
-            console.log("this.$refs.auswahlPruefplan.value");
-            console.log(this.$refs.auswahlPruefplan.value); */
-
-            //----------------
+            this.showModal = false;
             var name;
 
             if (this.$refs.auswahlPruefplan.value.trim() === "") {
@@ -1328,6 +1338,7 @@ export default {
                     //console.log(response)
                     // Entferne den Inhalt von this.$refs.auswahlGespeichertePruefung.value
                     this.$refs.auswahlGespeichertePruefung.value = "";
+                    this.resetAllCategories();
                 })
             .catch(function (error) {
                 console.log('error mess');
@@ -1435,6 +1446,7 @@ export default {
             scanNichtVerfuegbar: false,
             userInput: "",
             host: "",
+            showModal: false, // Steuert die Sichtbarkeit des Modals
             check: {
                 //model: Modell,
                 model: {},
@@ -1445,12 +1457,6 @@ export default {
                 pruefplanId: "",
                 create_gespeicherte_preufungen: {},
                 gespeicherte_pruefungen: {
-                    // pruefung1: {},
-                    // pruefung2: {},
-                    // pruefung3: {},
-                    // pruefung4: {},
-                    // pruefung5: {},
-                    // pruefung6: {}
                 },
                 gespeicherte_pruefungen_lesbar:{},
                 gespeicherte_pruefungId: ""
@@ -1510,7 +1516,6 @@ export default {
         <!--
         <h2 class="me-md-4">Schritt {{step}}</h2>
         -->
-        
             <button v-if="step==1" class="btn btn-secondary btn-lg menu-button me-md-2 " type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false" align="right">
                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="white" class="bi bi-list" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
@@ -1519,14 +1524,6 @@ export default {
             <ul class="dropdown-menu" v-if="step==1" aria-labelledby="dropdownMenuButton1">
                 <li><a class="dropdown-item text-center"  v-if="step==1" @click="setSettings">Einstellung</a></li>
             </ul>
-
-    
-
-
-        
-        <!--
-        <button class="btn btn-outline-secondary btn-lg btn-light" type="button" @click="scan_startScan">Senden</button>  
-        -->
     </div>
 
     <!-- Einstellung -->
@@ -1566,12 +1563,22 @@ export default {
             <h1>Prüfplan auswählen</h1>
             
             <div>
-                <select class="form-select form-select-lg mb-3" size="12" v-model="check.pruefplanId" id="selectionPruefplan" ref="auswahlPruefplan">
+                <div class="list-group">
+                        <ul class="list-group mb-3" style="max-height: 350px; overflow: auto;" size="12" id="selectionPruefplan" ref="auswahlPruefplan">
+                            <li v-for="(value, key) in check.pruefplane_lesbar" :key="key" :value="value" 
+                            class="list-group-item fs-6" 
+                            :class="{ 'active': check.pruefplanId === value }" 
+                            @click="check.pruefplanId = value">
+                                {{ value }}
+                            </li>
+                        </ul>
+                    </div>
+
+                <select class="form-select form-select-lg mb-3 d-none" size="12" v-model="check.pruefplanId" id="selectionPruefplan" ref="auswahlPruefplan">
                     <option v-for="(value, key) in check.pruefplane_lesbar" :key="key" :value="value">
-                        <!--{{ key }} für {{ value }} -->
                         {{ value }}
                     </option>
-                </select>
+                </select> 
             </div>
         </div>
     </div>
@@ -1583,16 +1590,30 @@ export default {
             <h1>Prüfung fortsetzen</h1>
             
             <div>
-                <select class="form-select form-select-lg mb-3" size="12" v-model="check.gespeicherte_pruefungenId" id="selectionGespeichertePruefung" ref="auswahlGespeichertePruefung">
+                <div class="list-group">
+                        <ul class="list-group mb-3" style="max-height: 350px; overflow: auto;" size="12" id="selectionGespeichertePruefung" ref="auswahlGespeichertePruefung">
+                            <li v-for="(value, key) in check.gespeicherte_pruefungen_lesbar" :key="key" :value="value"
+                            class="list-group-item fs-6" 
+                            
+                            :class="{ 'active': check.gespeicherte_pruefungenId === value }" 
+                            @click="check.gespeicherte_pruefungenId = value">
+                                {{ value }}
+                            </li>
+                        </ul>
+                    </div>
+
+
+                <select class="form-select form-select-lg mb-3 d-none" size="12" v-model="check.gespeicherte_pruefungenId" id="selectionGespeichertePruefung" ref="auswahlGespeichertePruefung">
                     <option v-for="(value, key) in check.gespeicherte_pruefungen_lesbar" :key="key" :value="value">
                         {{ value }}
                     </option>
                 </select>
+
             </div>
         </div>
     </div>
 
-    <!-- Prüfauftrag -->
+    <!-- Eingangsinformationen -->
     <div id="step3_auftragsinfos" class="step" ref="step3">
         <div >
             <div class="mb-5 h1 text-center">Prüfauftrag</div>
@@ -1659,6 +1680,7 @@ export default {
         </div>
     </div>
 
+    <!-- Teilschritte innerhalb der Prüfkategorien -->
     <div id="step5_pruefung" class="step" ref="step5">
         <div class="mb-5 h1 text-center" v-if="darstellung.aktiveKategorie">
             {{ darstellung.aktiveKategorie }}</div>
@@ -1675,10 +1697,22 @@ export default {
         </div>
     </div>
 
+    <!-- PopUp Prüfung abbrechen? -->
+    <div v-if="showModal" class="modal">
+    <div class="modal-content">
+        <div class="mb-5 h3 text-center">Möchten Sie die Prüfung wirklich abbrechen? Der Entwurf wird nicht zwischengespeichert.</div>
+        <p></p>
+        <button class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-20 start-0" @click="cancelCancel">Nein, Prüfung fortsetzen </button>
+        <button type="button" @click="pruefungZwischenspeichern" class="btn btn-secondary step-button-left position-absolute bottom-0 " style="right: 300px;">Entwurf zwischenspeichern</button>
+        <button class="btn btn-secondary btn-bg-white step-button-right position-absolute bottom-20 end-0 translate-middle-x"@click="confirmCancel">Ja, Prüfung abbrechen</button>
+    </div>
+</div>
+
     <!-- Weiter und Zurück Buttons -->
     <div class="m-3">
       <button type="button" v-if="step==1" disabled class="btn btn-outline-secondary step-button-left-inactive position-absolute bottom-0 start-0">Zurück</button>
-      <button type="button" @click="prevStep" v-if="step!=1" class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-0 start-0">Zurück</button>
+      <button type="button" @click="prevStep" v-if="step!=1 && step!=3" class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-0 start-0">Zurück</button>
+      <button type="button" @click="cancelPruefung" v-if="step==3" class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-0 start-0">Prüfung abbrechen</button>
 
       <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary step-button-right-inactive position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
       <button type="button" v-if="step<5 && step!=1 && step!=2 && nextStepMoeglich" @click="pruefungZwischenspeichern" class="btn btn-secondary step-button-left position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
@@ -1697,16 +1731,37 @@ export default {
         <strong>{{ alertMessage }}</strong> Sie werden zurück zur Startseite geleitet.
       </div>
       
-     
-
-
-
-   <!--  <div id="checkInjectionPoint">hello</div> -->
-   <!-- <button @click="pruefungZwischenspeichern" class="btn btn-lg">Test</button> -->
 </template>
 
 
 <style scoped>
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%;
+    height: 40%;
+    justify-content: center;
+    align-items: center;
+}
+
+.list-group-item.active {
+    background-color: #007bff; /* Beispiel-Farbe */
+    color: white; /* Textfarbe */
+}
+
 .menubar {
   height: 17vh;
   width: 100vw;
