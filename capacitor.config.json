@@ -1,0 +1,10 @@
+{
+  "appId": "sam.check.app",
+  "appName": "sam-ki-check",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true,
+    "androidScheme": "http"
+  }
+}
