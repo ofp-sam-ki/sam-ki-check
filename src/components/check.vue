@@ -7,11 +7,14 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js' //--> HTML Part 
 import axios from 'axios';
 import { BarcodeScanner } from '@capacitor-community/barcode-scanner' ;
-import Quagga from 'quagga';
+import Quagga from '@ericblade/quagga2';
+import QrCodeReader from 'quagga2-reader-qr';
 import { reactive } from 'vue';
 import JSZip from 'jszip'
 import { addPlatform } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
+
+Quagga.registerReader('qr_reader', QrCodeReader);
 
 //var host = 'http://localhost:4000'
 //var host = 'http://192.168.0.100:4000' // adresse backend 
@@ -125,7 +128,6 @@ export default {
             
 
             let element = document.getElementById(id + "-schritt-div");
-            var userInput = '';
             
             if (!element) {
                 element = document.createElement("div");
@@ -149,7 +151,7 @@ export default {
             let content = document.createElement("div");
             content.classList.add("col");
 
-            //Bilder und Barcode
+            //Bilder
             let edit = document.createElement("div");
             edit.classList.add("col");
 
@@ -358,9 +360,12 @@ export default {
 
                     view.innerHTML = '<button class="btn btn-lg menu-button" type="button">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';
                     
-                    view.addEventListener("click", function()
+                    view.addEventListener("click", () =>
                                 {
                                     text.value = "";
+                                    this.userInput = text.value;
+                                    this.check.model[firstID][displayName]["Beschreibung"]=this.userInput;
+                                    this.check.model[firstID][displayName]["erfuellt"]=false; 
                                     element.classList.remove('table-success');
                                 });
 
@@ -368,8 +373,10 @@ export default {
                     break;
                 }
                 case "Checkbox":
-                {        /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
+                {       /* content.innerHTML = '<input type="checkbox" st id="' + id + '-schritt-div-content" name="checkbox" />'; */
                         content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + " </span>";
+                        content.classList.add("col-md-4");
+                        edit.classList.add("col-sm-1");
 
                         let checkbox = document.createElement("input");
                         checkbox.type = "checkbox";
@@ -430,40 +437,62 @@ export default {
                     let kategorieName = id.split(".")[0];
                     let schrittName = id.split(".")[1];
 
-                    if (this.check.model[kategorieName] && this.check.model[kategorieName][schrittName] && this.check.model[kategorieName][schrittName]["Barcode"]) {
-                        let savedBarcode = this.check.model[kategorieName][schrittName]["Barcode"];
-                        let codeElement = document.createElement("div");
-                        codeElement.textContent = "Barcode: " + savedBarcode;
-                        edit.appendChild(codeElement);
+                    if (this.check.model[kategorieName] && this.check.model[kategorieName][displayName] && this.check.model[kategorieName][displayName]["Beschreibung"]) {
                         element.classList.add('table-success');
                     }
 
-                    add.addEventListener("click", async function () {
-                            let scannerDiv = document.createElement("div");
-                            scannerDiv.id = "barcode-scanner";
-                            scannerDiv.style.position = "fixed";
-                            scannerDiv.style.top = "50%";
-                            scannerDiv.style.left = "50%";
-                            scannerDiv.style.transform = "translate(-50%, -50%)";
-                            scannerDiv.style.width = "640px"; // Fixe Breite
-                            scannerDiv.style.height = "480px"; // Fixe Höhe
-                            document.body.appendChild(scannerDiv);
+                    add.addEventListener("click", function () {
+                        // Überprüfe, ob die getUserMedia-API verfügbar ist
+                        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                                console.log("mediaDevices nicht verfügbar");
+                                return;
+                            }
+                            navigator.mediaDevices.getUserMedia({ 
+                                video: {
+                                    facingMode: { ideal: 'environment' } // Rückkamera anfordern
+                                }
+                            })
+                        
+                        .then(stream => {
 
+                            let video = document.createElement("div");
+                            video.id = "barcode-scanner";
+                            video.style.position = "fixed";
+                            video.srcObject = stream;
+                            video.style.top = "50%";
+                            video.style.left = "50%";
+                            video.style.transform = "translate(-50%, -50%)";
+                            video.style.width = "640px"; // Fixe Breite
+                            video.style.height = "480px"; // Fixe Höhe
+                            
+                            
                             let stopbutton = document.createElement("button");
                             stopbutton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"> <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/> </svg>';
                             stopbutton.classList.add('btn', 'btn-primary');
-                            //stopbutton.style.position = "absolute";
                             stopbutton.style.position = "fixed";
                             stopbutton.style.top = "26%";
                             stopbutton.style.left = "65%";
                             stopbutton.style.transform = "translateX(-50%)";
 
                             stopbutton.addEventListener("click", function () {
+                                let video = document.getElementById("barcode-scanner");
+
+                                let stream = video.srcObject;
+                                let tracks = stream.getTracks();
+                                tracks.forEach(function (track) {
+                                            track.stop();
+                                        });
+
+                                //video.srcObject = null;
+                                video.remove();
+                                //video = null;
+                                
                                 Quagga.stop();
-                                scannerDiv.remove();
+                                Quagga.offDetected();
                                 stopbutton.remove();
                             });
-
+                            
+                            document.body.appendChild(video);
                             document.body.appendChild(stopbutton);
 
                             Quagga.init({
@@ -478,7 +507,7 @@ export default {
                                     },
                                 },
                                 decoder: {
-                                    readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                                    readers: ["code_39_reader", "qr_reader"]
                                 }
                             }, function (err) {
                                 if (err) {
@@ -489,29 +518,49 @@ export default {
                                 Quagga.start();
                             });
 
+
                             Quagga.onDetected(function (result) {
                                 let code = result.codeResult.code;
                                 let format = result.codeResult.format; 
                                 console.log("Barcode detected: " + code);
                                 console.log("Decoder used: " + format);
 
-
+                                // Überprüfen, ob der kategorieName existiert
                                 if (!vm.pruefung.pruefung[kategorieName]) vm.pruefung.pruefung[kategorieName] = {};
-                                if (!vm.pruefung.pruefung[kategorieName][schrittName]) vm.pruefung.pruefung[kategorieName][schrittName] = {};
-                                vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"] = code;
-                                vm.pruefung.pruefung[kategorieName][schrittName]["erfuellt"] = true;
+                                // Überprüfen, ob der schrittName existiert 
+                                if (!vm.pruefung.pruefung[kategorieName][displayName]) vm.pruefung.pruefung[kategorieName][displayName] = {};
+                                vm.pruefung.pruefung[kategorieName][displayName]["Beschreibung"] = code;
+                                vm.pruefung.pruefung[kategorieName][displayName]["erfuellt"] = true;
 
-                                edit.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
+                                //content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
                                 let codeElement = document.createElement("div");
-                                codeElement.textContent = "Barcode: " + code;
-                                edit.appendChild(codeElement);
+                                codeElement.textContent = code;
+                                content.appendChild(codeElement);
+                                
 
                                 element.classList.add('table-success');
+
+                                let video = document.getElementById('barcode-scanner');
+
+                                let stream = video.srcObject;
+                                let tracks = stream.getTracks();
+                                tracks.forEach(function (track) {
+                                            track.stop();
+                                        });
+
+                                video.remove();
+                                
                                 Quagga.stop();
-                                scannerDiv.remove();
+                                Quagga.offDetected();
                                 stopbutton.remove();
                             });
-                    });
+                        })
+                        
+                .catch(function (error) {
+                        // Fehler beim Öffnen der Kamera
+                        console.error('Fehler beim Öffnen der Kamera:', error);
+                    });   
+                });
 
 
                     let comment = document.createElement("input");
@@ -533,7 +582,7 @@ export default {
                         }
                     });
 
-                        comm.appendChild(comment);
+                    comm.appendChild(comment);
 
                     
                     view.innerHTML = '<button class="btn btn-lg menu-button" type="button" style="padding: 0;">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16"> <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/> </svg></button> ';    
@@ -543,14 +592,16 @@ export default {
                         if (vm.pruefung.pruefung[kategorieName] && vm.pruefung.pruefung[kategorieName][schrittName]) {
                             delete vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"];
                         }
-                        edit.innerHTML = "";
+                        content.innerHTML = "";
                         element.classList.remove('table-success');
                     });
-                    
+
                     break;
                 }
                 case "Anleitung":
-                {
+                {   
+                    content.classList.add("col-md-8");
+                    content.classList.add("fw-bold");
                     content.innerHTML = '<span id="' + id + '-schritt-div-content">' + schritt.Beschreibung + "</span>";
                     break;
                 }
@@ -577,7 +628,7 @@ export default {
 
             for (const [schrittName, schrittInhalt] of Object.entries(this.pruefung.pruefung[kategorieName]))
             {
-                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
+                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte" || schrittName == "benoetigteSchritte") continue;
                 let schritt = this.schrittAlsHtmlEintragBauen(schrittName, schrittInhalt, kategorieName + "." + schrittName);
                 //console.log("schirtt-3")
                 //console.log(schritt)
@@ -742,6 +793,7 @@ export default {
                 case 2: break;
                 case 3: {
                     this.kategorieErfuellteSchritteUeberpruefen("Eingangsinformationen");
+                    this.kategorieBenoetigteSchritteUeberpruefen("Eingangsinformationen");
                     return this.checkKategorie("Eingangsinformationen");
                 }
                 case 4: this.kategorienUeberpruefen();
@@ -1109,31 +1161,23 @@ export default {
 
             for (var [kategorieName, kategorieInhalt] of Object.entries(vorbereitet))
             {   
-/*                 for (var [schrittName, schrittInhalt] of Object.entries(kategorieInhalt))
-                {
-                    console.log("schrittInhalt");
-                    console.log(schrittInhalt);
-                    console.log('schrittInhalt["erfuellt"]');
-                    console.log(schrittInhalt["erfuellt"]);
-
-                    //schrittInhalt["erfuellt"] = false;
-                    
-                    //schrittInhalt["elementId"] = "";
-                } */
-                //kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length -2;
-
                 if ("anzahlSchritte" in kategorieInhalt) {
-                    kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length - 2;
+                    kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length - 3;
                 } else {
                     kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length;
                 }
 
-
                 //kategorieInhalt["anzahlSchritte"] = Object.keys(kategorieInhalt).length -2;
 
-
                 kategorieInhalt["erfuellteSchritte"] = 0;
-                //console.log(" --> bei modellVorbereiten() : erfuellteSchritte = 0")
+                
+                if ("benoetigteSchritte" in kategorieInhalt) {
+                    this.kategorieBenoetigteSchritteUeberpruefen(kategorieName);
+                } else {
+                    kategorieInhalt["benoetigteSchritte"] = 0;
+                    this.kategorieBenoetigteSchritteUeberpruefen(kategorieName);
+                    console.log(kategorieInhalt["benoetigteSchritte"])
+                }
             }
 
             this.pruefung.pruefung = vorbereitet;
@@ -1158,8 +1202,27 @@ export default {
                 //console.log("this.kategorieErfuellteSchritteUeberpruefen(kategorieName); --> kategorieName")
                 //console.log(kategorieName)
                 this.kategorieErfuellteSchritteUeberpruefen(kategorieName);
+                this.kategorieBenoetigteSchritteUeberpruefen(kategorieName);
             }
         },
+
+        kategorieBenoetigteSchritteUeberpruefen(kategorieName)
+        {
+            var benoetigtZaehler = 0;
+
+            for (var [schrittName, schrittInhalt] of Object.entries(this.check.model[kategorieName]))
+
+            {
+                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte" || schrittName == "benoetigteSchritte") continue;
+                if (schrittInhalt["Benötigt"] == true) ++benoetigtZaehler;
+                else console.log(benoetigtZaehler);
+
+            }
+
+            this.check.model[kategorieName].benoetigteSchritte = benoetigtZaehler;
+        },
+
+
         kategorieErfuellteSchritteUeberpruefen(kategorieName)
         {
             //console.log("kategorieErfuellteSchritteUeberpruefen");
@@ -1170,7 +1233,7 @@ export default {
             for (var [schrittName, schrittInhalt] of Object.entries(this.check.model[kategorieName]))
 
             {
-                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte") continue;
+                if (schrittName == "anzahlSchritte" || schrittName == "erfuellteSchritte" || schrittName == "benoetigteSchritte") continue;
                 schrittInhalt["erfuellt"] = this.schrittUeberpruefen(kategorieName + "." + schrittName, schrittInhalt);
                 if (schrittInhalt.erfuellt) ++erfuelltZaehler;
                 //console.log("this.check.model[kategorieName]")
@@ -1489,10 +1552,12 @@ export default {
         allRequiredEntriesFulfilled() {
             for (const [key, value] of Object.entries(this.check.model)) {
 
-                    if (key == "Eingangsinformationen") continue;
+                    // if (key == "Eingangsinformationen") continue;
        
-                    if (value.erfuellteSchritte !== value.anzahlSchritte) {
+                    if (value.erfuellteSchritte < value.benoetigteSchritte) {
                         console.log("allRequiredEntriesFulfilled() is False");
+                        console.log(value.erfuellteSchritte);
+                        console.log(value.benoetigteSchritte);
                         return false; // Sobald ein Eintrag die Bedingung nicht erfüllt, wird `false` zurückgegeben.
                     }
                 }
@@ -1618,7 +1683,7 @@ export default {
         <div >
             <div class="mb-5 h1 text-center">Prüfauftrag</div>
 
-            <table class="table table-responsive justify-content-md-center md-3" style="max-height: 500px; overflow: auto; margin-left: auto; margin-right: auto;" id="injectionPointAuftragsinfos">
+            <table class="table table-responsive" style="display: flex; max-height: 350px; overflow: auto; margin-left: auto; margin-right: auto;" id="injectionPointAuftragsinfos">
             </table>
         </div>
     </div>
@@ -1666,10 +1731,10 @@ export default {
                         </div>
                     </div>
                                       
-                    <div class="col-3 card text-bg-light h3">
+                    <div class="col-3 card text-bg-light h3" style="max-height: 350px; overflow: auto; display: flex; ">
                     <!-- Spalte rechts: Übersicht Eingangsinformationen -->
                         <div class="row" style="padding: 10px; width:" v-for="(value, key, index) in check.model.Eingangsinformationen" :key="key" :value="value">
-                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key" v-if="index < (Object.keys(check.model.Eingangsinformationen).length - 2)">
+                            <div class="col" :id="'ueberblick.eingangsinformationen.' + key" v-if="index < (Object.keys(check.model.Eingangsinformationen).length - 3)">
                                 <span style="font-size: 14px;">{{ key+": " }} {{ value.Beschreibung }}</span>
                             </div>
                         </div>
@@ -1693,7 +1758,6 @@ export default {
                     <div class="col">Kommentar Bearbeiter</div>
             </div>
         <div class="table table-responsive" style="max-height: 350px; overflow: auto;" id="injectionPointKategorien">
-
         </div>
     </div>
 
