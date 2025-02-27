@@ -520,6 +520,7 @@ export default {
 
 
                             Quagga.onDetected(function (result) {
+                                content.innerHTML = "";
                                 let code = result.codeResult.code;
                                 let format = result.codeResult.format; 
                                 console.log("Barcode detected: " + code);
@@ -533,9 +534,7 @@ export default {
                                 vm.pruefung.pruefung[kategorieName][displayName]["erfuellt"] = true;
 
                                 //content.innerHTML = ''; // Leere den Inhalt von content, um sicherzustellen, dass der vorherige Barcode entfernt wird
-                                let codeElement = document.createElement("div");
-                                codeElement.textContent = code;
-                                content.appendChild(codeElement);
+                                content.innerHTML = code;
                                 
 
                                 element.classList.add('table-success');
@@ -590,9 +589,14 @@ export default {
                     view.addEventListener("click", function() {
                         // Entferne den Barcode aus dem Log
                         if (vm.pruefung.pruefung[kategorieName] && vm.pruefung.pruefung[kategorieName][schrittName]) {
-                            delete vm.pruefung.pruefung[kategorieName][schrittName]["Barcode"];
+                        content.innerHTML = "";
+                        vm.pruefung.pruefung[kategorieName][displayName]["Beschreibung"]="";
+                        vm.pruefung.pruefung[kategorieName][displayName]["erfüllt"]= false;
+                        element.classList.remove('table-success');
                         }
                         content.innerHTML = "";
+                        vm.pruefung.pruefung[kategorieName][displayName]["Beschreibung"]="";
+                        vm.pruefung.pruefung[kategorieName][displayName]["erfüllt"]= false;
                         element.classList.remove('table-success');
                     });
 
