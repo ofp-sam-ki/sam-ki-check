@@ -327,6 +327,7 @@ export default {
                     }
                 case "Text":
                 {
+                    name.classList.add("col-md-6");
                     add.addEventListener("click", function() { vm.startScan(replacementString)});
                     
                     //add.innerHTML = '<button class="btn btn-outline-secondary btn-lg menu-button me-md-2" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16"> <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/> </svg></button> ' ;
@@ -1687,7 +1688,7 @@ export default {
         <div >
             <div class="mb-5 h1 text-center">Prüfauftrag</div>
 
-            <table class="table table-responsive" style="display: flex; max-height: 350px; overflow: auto; margin-left: auto; margin-right: auto;" id="injectionPointAuftragsinfos">
+            <table class="table table-responsive" style="display: flex; max-height: 60vh; overflow: auto; margin-left: auto; margin-right: auto;" id="injectionPointAuftragsinfos">
             </table>
         </div>
     </div>
@@ -1735,7 +1736,7 @@ export default {
                         </div>
                     </div>
                                       
-                    <div class="col-3 card text-bg-light h3" style="max-height: 350px; overflow: auto; display: flex; ">
+                    <div class="col-3 card text-bg-light h3" style="max-height: 60vh; overflow: auto; display: flex; ">
                     <!-- Spalte rechts: Übersicht Eingangsinformationen -->
                         <div class="row" style="padding: 10px; width:" v-for="(value, key, index) in check.model.Eingangsinformationen" :key="key" :value="value">
                             <div class="col" :id="'ueberblick.eingangsinformationen.' + key" v-if="index < (Object.keys(check.model.Eingangsinformationen).length - 3)">
@@ -1761,7 +1762,7 @@ export default {
                     <div class="col"> </div>
                     <div class="col">Kommentar Bearbeiter</div>
             </div>
-        <div class="table table-responsive" style="max-height: 350px; overflow: auto;" id="injectionPointKategorien">
+        <div class="table table-responsive" style="max-height: 50vh; overflow: auto;" id="injectionPointKategorien">
         </div>
     </div>
 
