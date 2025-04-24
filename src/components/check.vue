@@ -1024,6 +1024,10 @@ export default {
             // Bestätigungs-Pop-up
             this.showModal = true; // Modal anzeigen
         },
+        ZwPruefung(){
+            // Bestätigungs-Pop-up
+            this.showZwModal = true; // Modal anzeigen
+        },
         confirmCancel() {
             // Wenn der Benutzer bestätigt, zurück zu step1
             this.step = 1; // Schritt zurücksetzen
@@ -1078,6 +1082,9 @@ export default {
         cancelCancel() {
             this.showModal = false; // Modal schließen, wenn der Benutzer "Nein" klickt
         },
+        cancelZw() {
+            this.showZwModal = false; // Modal schließen, wenn der Benutzer "Nein" klickt
+        },
     
         submit() { // ++++++++++++++++++++++++#######################################Stand 17.12.24++++++++++++++++++++++++++++++++++++++++
             // Preference Gerät Name - noch ändern zum Name des Prüfauftrags (automatisch auslesen)
@@ -1086,7 +1093,7 @@ export default {
             //console.log(this.$refs);
             //console.log(this.auswahlPruefplan);
 
-            var name = this.auswahlPruefplan + "_" + this.getCurrentDateTime();
+            var name = this.auswahlPruefplan + "_" + this.getCurrentDateTime() + "_" + "M_Nr";
             console.log("name");
             console.log(name);
             
@@ -1378,11 +1385,13 @@ export default {
             const Monat = String(now.getMonth() + 1).padStart(2, '0'); // Monate sind 0-basiert
             const Jahr = now.getFullYear();
 
-            return `${Stunde}${Minute}_${Tag}${Monat}${Jahr}`;
+            //return `${Stunde}${Minute}_${Tag}${Monat}${Jahr}`;
+            return `${Tag}${Monat}${Jahr}_${Stunde}${Minute}`;
         },
 
         pruefungZwischenspeichern() {
             this.showModal = false;
+            this.showZwModal = false;
             var name;
 
             if (this.$refs.auswahlPruefplan.value.trim() === "") {
@@ -1392,7 +1401,7 @@ export default {
             //console.log("If was done")
             } else {
                 // Wenn nicht leer, den Wert aus auswahlGespeichertePruefung verwenden
-                name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime();
+                name = this.$refs.auswahlPruefplan.value + "_" + this.getCurrentDateTime() + "_" + "M_Nr";
                 //console.log("else was done")
             }
             
@@ -1514,6 +1523,7 @@ export default {
             userInput: "",
             host: "",
             showModal: false, // Steuert die Sichtbarkeit des Modals
+            showZwModal: false,
             check: {
                 //model: Modell,
                 model: {},
@@ -1775,6 +1785,15 @@ export default {
         <button class="btn btn-secondary btn-bg-white step-button-right position-absolute bottom-20 end-0 translate-middle-x"@click="confirmCancel">Ja, Prüfung abbrechen</button>
     </div>
 </div>
+    <!-- PopUp Zwischenspeichern -->
+    <div v-if="showZwModal" class="modal">
+        <div class="modal-content">
+        <div class="mb-5 h3 text-center">Möchten Sie die Prüfung wirklich Zwischenspeichern? Sie werden dann auf die Startseite zurückgeführt.</div>
+        <p></p>
+        <button class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-20 start-0" @click="cancelZw">Nein, Prüfung fortsetzen </button>
+        <button type="button" @click="pruefungZwischenspeichern" class="btn btn-secondary step-button-left position-absolute bottom-0" style="right: 300px;">Entwurf zwischenspeichern</button>
+        </div>
+    </div>
 
     <!-- Weiter und Zurück Buttons -->
     <div class="m-3">
@@ -1783,22 +1802,27 @@ export default {
       <button type="button" @click="cancelPruefung" v-if="step==3" class="btn btn-outline-secondary btn-bg-white step-button-left position-absolute bottom-0 start-0">Prüfung abbrechen</button>
 
       <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary step-button-right-inactive position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
-      <button type="button" v-if="step<5 && step!=1 && step!=2 && nextStepMoeglich" @click="pruefungZwischenspeichern" class="btn btn-secondary step-button-left position-absolute bottom-0 " style="right: 300px;">Zwischenspeichern</button>
+      <!--
+      <button type="button" v-if="step<5 && step!=1 && step!=2 && nextStepMoeglich" @click="pruefungZwischenspeichern" class="btn btn-secondary step-button-left position-absolute bottom-0 " style="right: 500px;">Zwischenspeichern</button>
+      -->
+      <button type="button" @click="ZwPruefung" v-if="step<5 && step!=1 && step!=2 && nextStepMoeglich"  class="btn btn-secondary step-button-left position-absolute bottom-0 " style="right: 500px;">Zwischenspeichern</button>
 
       <button type="button" v-if="!nextStepMoeglich" disabled class="btn btn-secondary step-button-right-inactive position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
-      <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary step-button-right position-absolute bottom-0 end-0 translate-middle-x">Weiter</button>
+      <button type="button" @click="nextStep" v-if="step<4 && step!=1 && nextStepMoeglich" class="btn btn-secondary step-button-right position-absolute bottom-0 " style="right: 300px;" >Weiter</button>
       <!--
       <button type="button" @click="submit" v-if="step==4" class="btn btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       -->
       <!-- <button type="button" @click="submit" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" data-bs-placement="left" data-bs-title="Popover title" data-bs-content="And here's some amazing content. It's very engaging. Right?">Senden</button> -->
       <button type="button" @click="submit" v-if="step==4 && allRequiredEntriesFulfilled" class="btn btn-primary step-button-right position-absolute bottom-0 end-0 translate-middle-x">Senden</button> 
       <!-- <button type="button" v-if="step==4" class="btn btn-lg btn-primary btn-lg step-button-right fs-1 position-absolute bottom-0 end-0 translate-middle-x" data-bs-toggle="popover" title="Popover title" data-bs-content="Here's some amazing content.">Senden</button> -->
+      <button type="button" @click="submit" class="btn btn-primary step-button-right position-absolute bottom-0 end-0 translate-middle-x" :disabled="step !== 4 || !allRequiredEntriesFulfilled" :class="{'btn-primary': step === 4 && allRequiredEntriesFulfilled, 'btn-secondary': step !== 4 || !allRequiredEntriesFulfilled}">Senden</button>
     </div>
 
     <div v-if="showAlert" class="alert alert-success custom-alert">
         <strong>{{ alertMessage }}</strong> Sie werden zurück zur Startseite geleitet.
       </div>
-      
+   
+
 </template>
 
 
